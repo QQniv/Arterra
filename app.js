@@ -1,8 +1,8 @@
 /* ======================================================
-   ARTERRA — app.js (fixed centering & visibility for GLB)
+   ARTERRA — app.js (centering, visibility, camera framing)
    - RU/EN, overlay-меню, прелоадер с «пылью»
    - THREE + GLTFLoader + DRACOLoader (Sketchfab-friendly)
-   - Центрированное 3D-зерно (fixed), фоллбек-процедурная модель
+   - Центрированное 3D-зерно, фоллбек-процедурная модель
 ====================================================== */
 
 /* ---------- helpers ---------- */
@@ -97,41 +97,21 @@ function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classLi
 let renderer, scene, camera, bean, ground, keyLight;
 const beanCanvas = qs('#bean');
 
-/* Надёжный путь к GLB для GitHub Pages */
+/* Путь к GLB (надёжно для GitHub Pages) */
 const BEAN_REL_PATH = 'assets/coffee_bean.glb';
 const BEAN_GLTF_URL = new URL(BEAN_REL_PATH, document.baseURI).href;
 
-/* Материал — делаем его явно видимым */
+/* Материалы — делаем видимыми */
 function enhance(m){
-  if(!m || !m.isMeshStandardMaterial) return;
-  m.transparent = false;         // критично для Sketchfab-материалов
-  m.opacity = 1.0;
-  m.side = THREE.DoubleSide;     // на всякий случай (некоторые меши односторонние)
-  m.roughness = 0.42;
-  m.metalness = 0.08;
-  m.clearcoat = 0.55;
-  m.clearcoatRoughness = 0.35;
-  m.sheen = 0.6;
-  m.sheenColor = new THREE.Color(0x5e3f2b);
-  m.sheenRoughness = 0.5;
-}
-
-/* Центрирование и нормализация размера модели */
-function centerAndNormalize(root, targetSize=2.1){
-  const box = new THREE.Box3().setFromObject(root);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-
-  // переносим так, чтобы центр оказался в (0,0,0)
-  root.position.sub(center);
-
-  // иногда в GLB вложенность мешей такова, что pivot внутри; «обнулим» мировую матрицу
-  root.updateMatrixWorld(true);
-
-  // масштаб под единый размер
-  const maxDim = Math.max(size.x, size.y, size.z) || 1.0;
-  const scale = targetSize / maxDim;
-  root.scale.setScalar(scale);
+  if(!m) return;
+  if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial){
+    m.transparent = false;
+    m.opacity = 1.0;
+    m.side = THREE.DoubleSide;
+    m.roughness = Math.min(0.9, Math.max(0.2, m.roughness ?? 0.42));
+    m.metalness = Math.min(0.2, Math.max(0.02, m.metalness ?? 0.08));
+    if ('clearcoat' in m){ m.clearcoat = Math.max(m.clearcoat ?? 0.5, 0.5); m.clearcoatRoughness = 0.35; }
+  }
 }
 
 /* Фоллбек — процедурное зерно */
@@ -147,7 +127,6 @@ function makeFallback(){
   g.computeVertexNormals();
   const mat=new THREE.MeshPhysicalMaterial({ color:0x6f4e37, roughness:0.44, metalness:0.08,
     clearcoat:0.5, clearcoatRoughness:0.35, sheen:0.6, sheenColor:new THREE.Color(0x5e3f2b), sheenRoughness:0.5 });
-  enhance(mat);
   bean=new THREE.Mesh(g,mat); bean.castShadow=true; scene.add(bean);
 }
 
@@ -186,7 +165,6 @@ function initThree(){
 
   /* === GLTF + DRACO === */
   if (!THREE.GLTFLoader){ hud('Нет GLTFLoader'); makeFallback(); hidePreloader(); animate(); return; }
-
   const gltfLoader = new THREE.GLTFLoader();
   if (THREE.DRACOLoader){
     const draco = new THREE.DRACOLoader();
@@ -197,29 +175,68 @@ function initThree(){
     hud('DRACO не подключен — пробую без него');
   }
 
+  // --- ВКЛ/ВЫКЛ режим проверки видимости (радуга по нормалям) ---
+  const VIS_DEBUG = true; // когда увидишь боб — поставь false
+
   let loaded = false;
-  const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 5500);
+  const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 6000);
 
   gltfLoader.load(
-    new URL(BEAN_REL_PATH, document.baseURI).href,
+    BEAN_GLTF_URL,
     (gltf)=>{
       loaded = true; clearTimeout(safety); hud('model ✔︎');
+
+      // 1) Обёртка и добавление
+      const wrapper = new THREE.Group();
       const model = gltf.scene || gltf.scenes?.[0];
-      // приводим все материалы к видимому виду
+      wrapper.add(model);
+      scene.add(wrapper);
+
+      // 2) Материалы: сделаем их видимыми (или нормал-дебаг)
       model.traverse(o=>{
-        if(o.isMesh){
+        if (o.isMesh){
           o.castShadow = true; o.receiveShadow = false;
-          if (o.material){
-            if (Array.isArray(o.material)) o.material.forEach(enhance);
-            else enhance(o.material);
+          if (VIS_DEBUG){
+            o.material = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+          } else {
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach(enhance);
           }
         }
       });
-      // центр и нормализация размера
-      centerAndNormalize(model, 2.1);
 
-      bean = model; scene.add(bean);
+      // 3) Центр и размер — переносим модель к (0,0,0), нормализуем масштаб
+      model.updateWorldMatrix(true, true);
+      const rawBox = new THREE.Box3().setFromObject(model);
+      const size   = rawBox.getSize(new THREE.Vector3());
+      const center = rawBox.getCenter(new THREE.Vector3());
+      model.position.sub(center);
+      model.updateWorldMatrix(true, true);
+
+      const maxDim = Math.max(size.x, size.y, size.z) || 1.0;
+      const target = 2.1;
+      const scale  = target / maxDim;
+      wrapper.scale.setScalar(scale);
+
+      // 4) Кадрируем камеру по bounding sphere
+      const box = new THREE.Box3().setFromObject(wrapper);
+      const sphere = new THREE.Sphere(); box.getBoundingSphere(sphere);
+      const fov = camera.fov * (Math.PI / 180);
+      const dist = sphere.radius / Math.tan(fov / 2);
+      camera.position.set(0, sphere.center.y + sphere.radius * 0.3, dist * 1.15);
+      camera.lookAt(sphere.center.clone());
+      camera.near = Math.max(0.01, dist - sphere.radius * 4.0);
+      camera.far  = dist + sphere.radius * 8.0;
+      camera.updateProjectionMatrix();
+
+      // 5) Положим тень под объект
+      ground.position.y = sphere.center.y - sphere.radius * 0.95;
+
+      // 6) Гладкий выход из прелоадера
       hidePreloader();
+
+      // крутим wrapper
+      bean = wrapper;
     },
     undefined,
     (err)=>{ loaded=true; clearTimeout(safety); hud('GLB error → fallback'); console.warn('[GLB error]', err); makeFallback(); hidePreloader(); }
