@@ -1,13 +1,13 @@
 /* -------------------------------------------------------
-   ARTERRA — RU/EN + overlay menu + плавный переход
-   GLB-кофезёрно с микро-текстурой и студийным светом
-   Автовращение + замедление при скролле
+   ARTERRA — RU/EN, overlay menu, плавный переход
+   Three.js + GLB-кофезёрно из assets/coffee_bean.glb
+   Автовращение, замедление при скролле, тени
 ------------------------------------------------------- */
 
-const qs = (s, el=document) => el.querySelector(s);
+const qs  = (s, el=document) => el.querySelector(s);
 const qsa = (s, el=document) => [...el.querySelectorAll(s)];
 
-// ===== Год
+// год в футере
 const yearEl = qs('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 /* ===================== I18N ===================== */
@@ -37,9 +37,8 @@ const translations = {
     card1_h:"Precision Growth", card1_p:"Sensor grids monitor humidity, pH, EC and canopy transpiration. AI nudges the microclimate within ±0.2°C.",
     card2_h:"Water Circularity", card2_p:"Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.",
     card3_h:"No Deforestation", card3_p:"Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.",
-    sustain_h2:"Sustainability & Impact",
-    sustain_lead:"Live counters (hectares saved, CO₂ avoided, water preserved) coming in the next iteration.",
-    products_h2:"Products", products_lead:"Clean grid shop for Moscow launch. Payments/integration to be wired later.",
+    sustain_h2:"Sustainability & Impact", sustain_lead:"Live counters coming in the next iteration.",
+    products_h2:"Products", products_lead:"Clean grid shop for Moscow launch.",
     prodA_h:"Prototype Roast A", prodA_p:"Caramel, citrus, cocoa. 250g",
     prodB_h:"Prototype Roast B", prodB_p:"Red fruit, florals, silky body. 250g",
     prodC_h:"Green Coffee (B2B)", prodC_p:"Uniform lots for cafés & roasters.",
@@ -49,7 +48,7 @@ const translations = {
 
 function setLang(lang){
   const dict = translations[lang] || translations.ru;
-  qsa('[data-i18n]').forEach(el => {
+  qsa('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     if (dict[key] !== undefined) el.textContent = dict[key];
   });
@@ -60,7 +59,10 @@ function initLang(){
   const start = localStorage.getItem('lang') || 'ru';
   setLang(start);
   const btn = qs('#langToggle');
-  if (btn) btn.addEventListener('click', () => setLang((localStorage.getItem('lang')||'ru')==='ru'?'en':'ru'));
+  if (btn) btn.addEventListener('click', ()=>{
+    const current = localStorage.getItem('lang') || 'ru';
+    setLang(current==='ru' ? 'en' : 'ru');
+  });
 }
 
 /* ===================== Меню ===================== */
@@ -72,69 +74,80 @@ function initMenu(){
   overlay.addEventListener('click', e => { if (e.target === overlay) toggle(false); });
 }
 
-/* ===================== Прелоадер ===================== */
+/* ===================== Прелоадер (фоновые точки + проценты) ===================== */
+// глушим бутстрап-интервал из index.html
+if (window.__arterraPreloaderBoot){ clearInterval(window.__arterraPreloaderBoot); window.__arterraPreloaderBoot = null; }
+
 (() => {
-  const c = qs('#dust'); if (!c) return; const ctx = c.getContext('2d');
+  const canvas = qs('#dust'); if (!canvas) return;
+  const ctx = canvas.getContext('2d');
   let w,h,parts=[];
-  function resize(){ w=c.width=innerWidth; h=c.height=innerHeight;
+  function resize(){
+    w = canvas.width = innerWidth; h = canvas.height = innerHeight;
     const count = Math.min(140, Math.floor((w*h)/18000));
-    parts = Array.from({length:count}).map(()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.7+0.6,vx:(Math.random()-.5)*0.2,vy:(Math.random()-.5)*0.2,a:Math.random()*0.6+0.2}));
+    parts = Array.from({length:count}).map(()=>({
+      x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.7+0.6,
+      vx:(Math.random()-.5)*0.2, vy:(Math.random()-.5)*0.2, a:Math.random()*0.6+0.2
+    }));
   }
-  function tick(){ ctx.clearRect(0,0,w,h); ctx.fillStyle='#a58869';
-    for(const p of parts){ p.x+=p.vx; p.y+=p.vy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0;
-      ctx.globalAlpha=p.a; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
+  function tick(){
+    ctx.clearRect(0,0,w,h); ctx.fillStyle='#a58869';
+    for(const p of parts){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0;
+      ctx.globalAlpha=p.a; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    }
     requestAnimationFrame(tick);
   }
-  addEventListener('resize',resize); resize(); tick();
-  const progress = qs('#progressText'); let p=0; const iv=setInterval(()=>{ p+=Math.random()*12; if(p>=100){p=100;clearInterval(iv);}
-    const lang=localStorage.getItem('lang')||'ru'; if(progress) progress.textContent=(lang==='en'?'Loading ':'Загрузка ')+Math.floor(p)+'%';
-  },120);
+  addEventListener('resize', resize); resize(); tick();
+
+  const progressEl = qs('#progressText');
+  let p = 0; const iv = setInterval(()=>{
+    p += Math.random()*12; if (p>=100){ p=100; clearInterval(iv); }
+    const lang = localStorage.getItem('lang') || 'ru';
+    if (progressEl) progressEl.textContent = (lang==='en'?'Loading ':'Загрузка ') + Math.floor(p) + '%';
+  }, 120);
 })();
-function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classList.add('loaded');return;}
-  p.classList.add('fade-out'); setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); },1100);
+
+function hidePreloader(){
+  const p = qs('#preloader');
+  if (!p){ document.body.classList.add('loaded'); return; }
+  p.classList.add('fade-out');
+  setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); }, 1100);
 }
 
-/* ===================== 3D кофейное зерно (GLB) ===================== */
+/* ===================== 3D ЗЕРНО ===================== */
 let renderer, scene, camera, bean, ground, lightKey, lightFill;
 const beanCanvas = qs('#bean');
 const BEAN_GLTF_URL = "assets/coffee_bean.glb";
 
-/* процедурная микро-карта шершавости (roughness) */
 function makeMicroRoughness(size=256){
   const cnv = document.createElement('canvas'); cnv.width = cnv.height = size;
-  const ctx = cnv.getContext('2d');
-  const img = ctx.createImageData(size, size);
-  for (let y=0; y<size; y++){
-    for (let x=0; x<size; x++){
+  const ctx = cnv.getContext('2d'); const img = ctx.createImageData(size,size);
+  for (let y=0;y<size;y++){
+    for (let x=0;x<size;x++){
       const nx=x/size, ny=y/size;
       const v = 0.55
         + 0.18*Math.sin((nx*6.0 + ny*3.7)*Math.PI)
         + 0.12*Math.sin((nx*10.0+ ny*11.0)*Math.PI)
         + 0.06*Math.sin(((nx+ny)*14.0)*Math.PI);
-      const g = Math.max(0, Math.min(1, v))*255|0;
-      const i = (y*size+x)*4;
+      const g = Math.max(0,Math.min(1,v))*255|0, i=(y*size+x)*4;
       img.data[i]=img.data[i+1]=img.data[i+2]=g; img.data[i+3]=255;
     }
   }
   ctx.putImageData(img,0,0);
   const tex = new THREE.CanvasTexture(cnv);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(3,3);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3,3);
   return tex;
 }
-function enhanceMaterial(mat){
-  if (!mat || !mat.isMeshStandardMaterial) return;
-  mat.roughness = Math.min(0.52, Math.max(0.28, mat.roughness ?? 0.44));
-  mat.metalness = Math.min(0.12, Math.max(0.04, mat.metalness ?? 0.08));
-  mat.clearcoat = Math.min(1.0, (mat.clearcoat ?? 0.35) + 0.25);
-  mat.clearcoatRoughness = Math.min(1.0, (mat.clearcoatRoughness ?? 0.4) + 0.05);
-  mat.sheen = 0.6;
-  mat.sheenColor = new THREE.Color(0x5e3f2b);
-  mat.sheenRoughness = 0.5;
-  if (!mat.roughnessMap){
-    mat.roughnessMap = makeMicroRoughness(256);
-    mat.needsUpdate = true;
-  }
+function enhanceMaterial(m){
+  if (!m || !m.isMeshStandardMaterial) return;
+  m.roughness = Math.min(0.52, Math.max(0.28, m.roughness ?? 0.44));
+  m.metalness = Math.min(0.12, Math.max(0.04, m.metalness ?? 0.08));
+  m.clearcoat = Math.min(1.0, (m.clearcoat ?? 0.35) + 0.25);
+  m.clearcoatRoughness = Math.min(1.0, (m.clearcoatRoughness ?? 0.4) + 0.05);
+  m.sheen = 0.6; m.sheenColor = new THREE.Color(0x5e3f2b); m.sheenRoughness = 0.5;
+  if (!m.roughnessMap){ m.roughnessMap = makeMicroRoughness(256); m.needsUpdate = true; }
 }
 
 function initThree(){
@@ -152,11 +165,9 @@ function initThree(){
   camera = new THREE.PerspectiveCamera(35, beanCanvas.clientWidth/beanCanvas.clientHeight, 0.1, 100);
   camera.position.set(0, 0.65, 3.0);
 
-  // студийный свет
   lightKey = new THREE.DirectionalLight(0xffffff, 0.9);
   lightKey.position.set(2.0, 3.0, 2.0);
-  lightKey.castShadow = true;
-  lightKey.shadow.mapSize.set(1024,1024);
+  lightKey.castShadow = true; lightKey.shadow.mapSize.set(1024,1024);
   scene.add(lightKey);
 
   lightFill = new THREE.DirectionalLight(0xffffff, 0.35);
@@ -164,82 +175,65 @@ function initThree(){
   scene.add(lightFill);
 
   const rim = new THREE.PointLight(0xffe2c4, 0.35, 10, 2.0);
-  rim.position.set(-1.6, 1.2, 1.8);
-  scene.add(rim);
+  rim.position.set(-1.6, 1.2, 1.8); scene.add(rim);
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xe6dccf, 0.35);
   scene.add(hemi);
 
-  // теневая подложка
   const groundGeo = new THREE.PlaneGeometry(6,6);
   const groundMat = new THREE.ShadowMaterial({opacity:0.18});
   ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI/2;
-  ground.position.y = -0.9;
-  ground.receiveShadow = true;
+  ground.rotation.x = -Math.PI/2; ground.position.y = -0.9; ground.receiveShadow = true;
   scene.add(ground);
 
-  // загрузка GLB
   const loader = new THREE.GLTFLoader();
   loader.load(
     BEAN_GLTF_URL,
-    (gltf) => {
+    (gltf)=>{
       const model = gltf.scene;
       model.traverse(o=>{
-        if (o.isMesh){
-          o.castShadow = true; o.receiveShadow = false;
-          enhanceMaterial(o.material);
-        }
+        if (o.isMesh){ o.castShadow = true; o.receiveShadow = false; enhanceMaterial(o.material); }
       });
       bean = model;
 
-      // нормализуем масштаб (на всякий случай)
+      // нормализация масштаба
       const box = new THREE.Box3().setFromObject(bean);
       const size = new THREE.Vector3(); box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const target = 2.1;
-      const s = target / maxDim;
+      const s = 2.1 / Math.max(size.x,size.y,size.z);
       bean.scale.setScalar(s);
 
       scene.add(bean);
       hidePreloader();
     },
-    () => {},
-    (err) => {
-      console.warn('[Arterra] GLB load failed:', err);
-      makeProceduralFallback(); hidePreloader();
-    }
+    undefined,
+    (err)=>{ console.warn('[Arterra] GLB load failed:', err); makeProceduralFallback(); hidePreloader(); }
   );
 
   animate();
 }
 
 function makeProceduralFallback(){
-  const g = new THREE.SphereGeometry(1, 128, 128);
+  const g = new THREE.SphereGeometry(1,128,128);
   const pos = g.attributes.position, v = new THREE.Vector3();
   for (let i=0;i<pos.count;i++){
-    v.fromBufferAttribute(pos, i);
+    v.fromBufferAttribute(pos,i);
     v.y*=0.78; v.x*=0.94; v.z*=1.10;
     const groove = Math.exp(-Math.pow(v.z*1.9,2))*0.26;
-    const side = Math.sign(v.x) || 1;
-    v.x -= side*groove;
+    const side = Math.sign(v.x) || 1; v.x -= side*groove;
     pos.setXYZ(i, v.x, v.y, v.z);
   }
   g.computeVertexNormals();
 
-  const mat = new THREE.MeshPhysicalMaterial({
-    color: 0x6f4e37, roughness:0.44, metalness:0.08,
+  const m = new THREE.MeshPhysicalMaterial({
+    color:0x6f4e37, roughness:0.44, metalness:0.08,
     clearcoat:0.5, clearcoatRoughness:0.35,
     sheen:0.6, sheenColor:new THREE.Color(0x5e3f2b), sheenRoughness:0.5
   });
-  enhanceMaterial(mat);
-
-  bean = new THREE.Mesh(g, mat);
-  bean.castShadow = true;
-  scene.add(bean);
+  enhanceMaterial(m);
+  bean = new THREE.Mesh(g,m); bean.castShadow = true; scene.add(bean);
 }
 
-/* ===== Рендер + скролл-замедление ===== */
+/* ===== Render + Scroll damping ===== */
 let scrollProgress = 0;
 function animate(){
   requestAnimationFrame(animate);
@@ -260,10 +254,9 @@ function fitRenderer(){
   if (camera){ camera.aspect = clientWidth/clientHeight; camera.updateProjectionMatrix(); }
 }
 
-/* ===== Прогресс скролла ===== */
 function initScrollDamping(){
   const hero = qs('#hero');
-  const onScroll = () => {
+  const onScroll = ()=>{
     const rect = hero.getBoundingClientRect();
     const viewport = innerHeight;
     const passed = Math.min(Math.max((viewport - rect.bottom)/viewport, 0), 1);
@@ -279,15 +272,12 @@ function initScrollDamping(){
 }
 
 /* ===================== Boot ===================== */
-window.addEventListener('load', () => {
+window.addEventListener('load', ()=>{
   initLang(); initMenu();
   try{ initThree(); initScrollDamping(); }
   catch(e){ console.error('[Arterra] Init error:', e); }
   finally{
-    setTimeout(() => {
-      const p = qs('#preloader');
-      if (p && !document.body.classList.contains('loaded')) hidePreloader();
-    }, 4000);
+    setTimeout(()=>{ const p=qs('#preloader'); if (p && !document.body.classList.contains('loaded')) hidePreloader(); }, 4000);
   }
 });
-addEventListener('resize', () => { if (renderer) fitRenderer(); });
+addEventListener('resize', ()=>{ if (renderer) fitRenderer(); });
