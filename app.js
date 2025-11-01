@@ -97,7 +97,7 @@ function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classLi
 let renderer, scene, camera, bean, ground, keyLight;
 const beanCanvas = qs('#bean');
 
-/* Путь к GLB (надёжно для GitHub Pages) */
+/* Путь к GLB */
 const BEAN_REL_PATH = 'assets/coffee_bean.glb';
 const BEAN_GLTF_URL = new URL(BEAN_REL_PATH, document.baseURI).href;
 
@@ -175,8 +175,8 @@ function initThree(){
     hud('DRACO не подключен — пробую без него');
   }
 
-  // --- ВКЛ/ВЫКЛ режим проверки видимости (радуга по нормалям) ---
-  const VIS_DEBUG = true; // когда увидишь боб — поставь false
+  // Включено: радуга по нормалям для проверки видимости.
+  const VIS_DEBUG = true; // ← после успеха переключи на false
 
   let loaded = false;
   const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 6000);
@@ -192,7 +192,7 @@ function initThree(){
       wrapper.add(model);
       scene.add(wrapper);
 
-      // 2) Материалы: сделаем их видимыми (или нормал-дебаг)
+      // 2) Материалы
       model.traverse(o=>{
         if (o.isMesh){
           o.castShadow = true; o.receiveShadow = false;
@@ -205,7 +205,7 @@ function initThree(){
         }
       });
 
-      // 3) Центр и размер — переносим модель к (0,0,0), нормализуем масштаб
+      // 3) Центр и масштаб
       model.updateWorldMatrix(true, true);
       const rawBox = new THREE.Box3().setFromObject(model);
       const size   = rawBox.getSize(new THREE.Vector3());
@@ -218,7 +218,7 @@ function initThree(){
       const scale  = target / maxDim;
       wrapper.scale.setScalar(scale);
 
-      // 4) Кадрируем камеру по bounding sphere
+      // 4) Кадрируем камеру по Bounding Sphere
       const box = new THREE.Box3().setFromObject(wrapper);
       const sphere = new THREE.Sphere(); box.getBoundingSphere(sphere);
       const fov = camera.fov * (Math.PI / 180);
@@ -232,11 +232,8 @@ function initThree(){
       // 5) Положим тень под объект
       ground.position.y = sphere.center.y - sphere.radius * 0.95;
 
-      // 6) Гладкий выход из прелоадера
       hidePreloader();
-
-      // крутим wrapper
-      bean = wrapper;
+      bean = wrapper; // крутим wrapper
     },
     undefined,
     (err)=>{ loaded=true; clearTimeout(safety); hud('GLB error → fallback'); console.warn('[GLB error]', err); makeFallback(); hidePreloader(); }
