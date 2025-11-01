@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Styles -->
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
@@ -22,7 +21,7 @@
       <div class="seed-to-bean" aria-hidden="true"></div>
       <div class="loader-caption">
         <span class="brand">ARTERRA</span>
-        <span class="progress" id="progressText">Loading 0%</span>
+        <span class="progress" id="progressText">Загрузка 0%</span>
       </div>
     </div>
   </div>
@@ -32,26 +31,42 @@
     <div class="brand">
       <span class="logo">ARTERRA</span>
     </div>
-    <nav class="nav">
-      <a href="#tech">Technology</a>
-      <a href="#sustain">Sustainability</a>
-      <a href="#products">Products</a>
-      <a href="#contact">Contact</a>
-    </nav>
+
+    <!-- Header right side: language + menu -->
+    <div class="header-actions">
+      <button id="langToggle" class="lang-toggle" aria-label="Switch language">RU</button>
+      <button id="menuToggle" class="menu-toggle" aria-label="Open menu">
+        <span class="burger" aria-hidden="true"></span>
+        <span class="menu-label" data-i18n="menu">Меню</span>
+      </button>
+    </div>
   </header>
+
+  <!-- Overlay Menu -->
+  <div id="menuOverlay" class="menu-overlay" aria-hidden="true">
+    <div class="menu-inner">
+      <nav class="menu-grid">
+        <a href="#tech" data-i18n="nav_tech">Технология</a>
+        <a href="#sustain" data-i18n="nav_sustain">Устойчивость</a>
+        <a href="#products" data-i18n="nav_products">Продукты</a>
+        <a href="#contact" data-i18n="nav_contact">Контакты</a>
+      </nav>
+      <button id="menuClose" class="menu-close" aria-label="Close menu">×</button>
+    </div>
+  </div>
 
   <!-- Hero -->
   <main>
     <section class="hero" id="hero">
       <div class="hero-copy">
-        <h1>Artificial nature.<br/>Real coffee.</h1>
-        <p>
-          We cultivate coffee in artificial plantations to end deforestation, stabilize quality,
-          and unlock a new generation of sustainable taste.
+        <h1><span data-i18n="h1_line1">Искусственная природа.</span><br/><span data-i18n="h1_line2">Настоящий кофе.</span></h1>
+        <p data-i18n="hero_p">
+          Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество
+          и открыть новое поколение устойчивого вкуса.
         </p>
         <div class="cta-row">
-          <a href="#tech" class="btn">Explore our method</a>
-          <a href="#products" class="link">Shop (Moscow)</a>
+          <a href="#tech" class="btn" data-i18n="cta_method">Посмотреть метод</a>
+          <a href="#products" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
         </div>
       </div>
 
@@ -64,24 +79,24 @@
     <!-- Technology -->
     <section class="section tech" id="tech">
       <div class="section-inner">
-        <h2>Artificial plantations explained</h2>
-        <p class="lead">
-          Controlled light. Precise nutrients. Recycled water. Zero forest loss.
-          Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.
+        <h2 data-i18n="tech_h2">Как устроены искусственные плантации</h2>
+        <p class="lead" data-i18n="tech_lead">
+          Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса.
+          Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.
         </p>
 
         <div class="cards">
           <article class="card">
-            <h3>Precision Growth</h3>
-            <p>Sensor grids monitor humidity, pH, EC, and canopy transpiration. AI nudges the microclimate within ±0.2°C.</p>
+            <h3 data-i18n="card1_h">Точная вегетация</h3>
+            <p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p>
           </article>
           <article class="card">
-            <h3>Water Circularity</h3>
-            <p>Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.</p>
+            <h3 data-i18n="card2_h">Круговорот воды</h3>
+            <p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p>
           </article>
           <article class="card">
-            <h3>No Deforestation</h3>
-            <p>Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.</p>
+            <h3 data-i18n="card3_h">Без вырубки</h3>
+            <p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p>
           </article>
         </div>
       </div>
@@ -90,36 +105,34 @@
     <!-- Sustainability -->
     <section class="section sustain" id="sustain">
       <div class="section-inner">
-        <h2>Sustainability & Impact</h2>
-        <p class="lead">
-          Live counters (hectares saved, CO₂ avoided, water preserved) coming in the next iteration.
-        </p>
+        <h2 data-i18n="sustain_h2">Устойчивость и влияние</h2>
+        <p class="lead" data-i18n="sustain_lead">Счётчики в реальном времени (сохранённые гектары, СО₂, вода) появятся в следующей итерации.</p>
       </div>
     </section>
 
     <!-- Products -->
     <section class="section products" id="products">
       <div class="section-inner">
-        <h2>Products</h2>
-        <p class="lead">Clean grid shop for Moscow launch. Payments/integration to be wired later.</p>
+        <h2 data-i18n="products_h2">Продукты</h2>
+        <p class="lead" data-i18n="products_lead">Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.</p>
         <div class="product-grid">
           <div class="product-card">
             <div class="thumb"></div>
-            <h4>Prototype Roast A</h4>
-            <p>Caramel, citrus, cocoa. 250g</p>
-            <button class="btn small" disabled>Coming soon</button>
+            <h4 data-i18n="prodA_h">Прототип РОСТ A</h4>
+            <p data-i18n="prodA_p">Карамель, цитрус, какао. 250 г</p>
+            <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
           </div>
           <div class="product-card">
             <div class="thumb"></div>
-            <h4>Prototype Roast B</h4>
-            <p>Red fruit, florals, silky body. 250g</p>
-            <button class="btn small" disabled>Coming soon</button>
+            <h4 data-i18n="prodB_h">Прототип РОСТ B</h4>
+            <p data-i18n="prodB_p">Красные ягоды, цветы, шёлковистое тело. 250 г</p>
+            <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
           </div>
           <div class="product-card">
             <div class="thumb"></div>
-            <h4>Green Coffee (B2B)</h4>
-            <p>Uniform lots for cafés & roasters.</p>
-            <button class="btn small" disabled>Inquiry</button>
+            <h4 data-i18n="prodC_h">Зелёный кофе (B2B)</h4>
+            <p data-i18n="prodC_p">Ровные лоты для кофеен и обжарщиков.</p>
+            <button class="btn small" disabled data-i18n="prod_inquiry">Запрос</button>
           </div>
         </div>
       </div>
@@ -128,8 +141,8 @@
     <!-- Contact -->
     <section class="section contact" id="contact">
       <div class="section-inner">
-        <h2>Contact</h2>
-        <p class="lead">Wholesale & press: hello@arterra.coffee (placeholder)</p>
+        <h2 data-i18n="contact_h2">Контакты</h2>
+        <p class="lead" data-i18n="contact_lead">Опт и пресса: hello@arterra.coffee (временный адрес)</p>
       </div>
     </section>
   </main>
@@ -138,10 +151,11 @@
     <span>© <span id="year"></span> Arterra</span>
   </footer>
 
-  <!-- Three.js Core -->
+  <!-- Three.js Core + Loaders -->
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <!-- App Logic -->
-  <script src="app.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
 
+  <!-- App -->
+  <script src="app.js"></script>
 </body>
 </html>
