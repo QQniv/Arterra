@@ -109,7 +109,7 @@
     <footer class="site-footer">© <span id="year"></span> Arterra</footer>
   </main>
 
-  <!-- Bootstrap progress (крутит % до старта app.js) -->
+  <!-- Bootstrap progress while the module loads -->
   <script>
     (function(){
       const el = document.getElementById('progressText'); if(!el) return;
@@ -117,18 +117,14 @@
     })();
   </script>
 
-  <!-- Three.js core (NON-module) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-  <!-- Loaders (NON-module so they attach to window.THREE) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/DRACOLoader.js"></script>
-
-  <!-- Optional: cache -->
-  <script>THREE.Cache.enabled = true;</script>
-
-  <!-- App (must be after loaders) -->
-  <script src="app.js"></script>
+  <!-- ES Modules: Three + Loaders + App -->
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/DRACOLoader.js';
+    import initApp from './app.module.js';
+    initApp({ THREE, GLTFLoader, DRACOLoader });
+  </script>
 
   <noscript>Для корректной работы включите JavaScript.</noscript>
 </body>
