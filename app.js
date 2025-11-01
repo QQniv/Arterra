@@ -1,87 +1,81 @@
 /* -------------------------------------------------------
-   ARTERRA — starter interactions + Three.js mock bean
-   - White preloader with dust particles + fake progress
-   - Auto-rotating coffee bean (no GLB needed)
-   - Soft shadow using ShadowMaterial
-   - Subtle scroll scaling/parallax
+   ARTERRA — interactions + fail-safe loader
+   - Dust preloader with fake progress
+   - Smooth transition: preloader fades, page reveals
+   - Three.js procedural coffee bean + soft shadow
 ------------------------------------------------------- */
 
-// ---------- Utilities
 const qs = (s, el=document) => el.querySelector(s);
 
 // Footer year
-qs('#year').textContent = new Date().getFullYear();
+const yearEl = qs('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-// ---------- Preloader: dust particles + fake progress
+/* ---------- Preloader: dust particles + progress ---------- */
 (() => {
   const canvas = qs('#dust');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let w, h, particles;
+  let w, h, particles = [];
 
   function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    makeParticles();
-  }
-  function makeParticles() {
     const count = Math.min(140, Math.floor((w*h)/18000));
     particles = Array.from({length: count}).map(() => ({
-      x: Math.random()*w,
-      y: Math.random()*h,
+      x: Math.random()*w, y: Math.random()*h,
       r: Math.random()*1.7 + 0.6,
-      vx: (Math.random()-.5)*0.2,
-      vy: (Math.random()-.5)*0.2,
+      vx: (Math.random()-.5)*0.2, vy: (Math.random()-.5)*0.2,
       a: Math.random()*0.6 + 0.2
     }));
   }
   function tick() {
     ctx.clearRect(0,0,w,h);
     ctx.fillStyle = '#a58869';
-    particles.forEach(p => {
+    for (const p of particles){
       p.x += p.vx; p.y += p.vy;
       if(p.x<0) p.x=w; if(p.x>w) p.x=0;
       if(p.y<0) p.y=h; if(p.y>h) p.y=0;
       ctx.globalAlpha = p.a;
       ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
-    });
+    }
     requestAnimationFrame(tick);
   }
   window.addEventListener('resize', resize);
   resize(); tick();
 
-  // Simulated progress (fast, smooth)
+  // Simulated progress
   const progressEl = qs('#progressText');
   let p = 0;
   const iv = setInterval(() => {
     p += Math.random()*12;
-    if(p >= 100){ p = 100; clearInterval(iv); }
-    progressEl.textContent = `Loading ${Math.floor(p)}%`;
+    if (p >= 100){ p = 100; clearInterval(iv); }
+    if (progressEl) progressEl.textContent = `Loading ${Math.floor(p)}%`;
   }, 120);
 })();
 
-// ---------- Three.js Coffee Bean (procedural mock)
-let renderer, scene, camera, bean, light, controls, ground;
-const canvas = qs('#bean');
+/* ---------- Three.js mock coffee bean ---------- */
+let renderer, scene, camera, bean, light, ground;
+const beanCanvas = qs('#bean');
 
 function initThree() {
-  renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer = new THREE.WebGLRenderer({canvas: beanCanvas, antialias:true, alpha:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  fitRenderer();
+
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   scene = new THREE.Scene();
 
   // Camera
-  const aspect = canvas.clientWidth / canvas.clientHeight;
-  camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(35, beanCanvas.clientWidth/beanCanvas.clientHeight, 0.1, 100);
   camera.position.set(0, 0.7, 3.2);
 
   // Lights
   const hemi = new THREE.HemisphereLight(0xffffff, 0xb99b7a, 0.6);
   scene.add(hemi);
 
-  light = new THREE.DirectionalLight(0xffffff, 0.8);
+  light = new THREE.DirectionalLight(0xffffff, 0.85);
   light.position.set(2.2, 3.5, 2.5);
   light.castShadow = true;
   light.shadow.mapSize.set(1024,1024);
@@ -96,34 +90,26 @@ function initThree() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Material with subtle coffee sheen
+  // Bean material
   const beanMat = new THREE.MeshStandardMaterial({
-    color: 0x6f4e37,               // coffee brown
-    roughness: 0.55,
-    metalness: 0.15,
+    color: 0x6f4e37, roughness: 0.55, metalness: 0.15
   });
 
-  // Geometry: start with a sphere and sculpt a "bean" with a center groove
+  // Geometry: sphere sculpted into bean with central groove
   const g = new THREE.SphereGeometry(1, 96, 96);
   const pos = g.attributes.position;
   const v = new THREE.Vector3();
   for (let i=0; i<pos.count; i++){
     v.fromBufferAttribute(pos, i);
-
-    // Scale to oval / almond-like
-    v.y *= 0.78;        // flatten vertically
-    v.x *= 0.94;
-    v.z *= 1.08;
-
-    // Carve the central groove along Y using a soft pinch along Z=0
-    const groove = Math.exp(-Math.pow(v.z*1.8, 2)) * 0.24; // width of groove
+    // almond shape
+    v.y *= 0.78; v.x *= 0.94; v.z *= 1.08;
+    // groove along Z=0
+    const groove = Math.exp(-Math.pow(v.z*1.8, 2)) * 0.24;
     const side = Math.sign(v.x) || 1;
-    v.x -= side * groove; // pull vertices inward near center plane
-
-    // Slight random micro-dents for natural look
+    v.x -= side * groove;
+    // micro-dents
     const nudge = (Math.sin(v.x*6)+Math.cos(v.y*7)+Math.sin(v.z*5))*0.0025;
     v.addScaledVector(v.clone().normalize(), nudge);
-
     pos.setXYZ(i, v.x, v.y, v.z);
   }
   g.computeVertexNormals();
@@ -132,43 +118,33 @@ function initThree() {
   bean.castShadow = true;
   scene.add(bean);
 
-  // Optional: allow gentle inspection on mobile without UI
-  controls = new THREE.OrbitControls(camera, canvas);
-  controls.enableZoom = false;
-  controls.enablePan = false;
-  controls.enableDamping = true;
-  controls.rotateSpeed = 0.2;
-  controls.dampingFactor = 0.06;
-  // keep auto-rotation vibe even if user touches
-  controls.autoRotate = true;
-  controls.autoRotateSpeed = 0.5;
-
   animate();
 }
 
 function animate() {
   requestAnimationFrame(animate);
-  // Subtle wobble + auto-rotation
   const t = performance.now()*0.0015;
-  bean.rotation.y += 0.0042;            // auto-spin
-  bean.rotation.x = Math.sin(t)*0.06;   // slow wobble
-
-  controls.update();
+  if (bean){
+    bean.rotation.y += 0.0042;      // auto spin
+    bean.rotation.x = Math.sin(t)*0.06;
+  }
   renderer.render(scene, camera);
 }
 
-function resizeThree() {
-  const {clientWidth, clientHeight} = canvas;
-  if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
-    renderer.setSize(clientWidth, clientHeight, false);
+function fitRenderer(){
+  const {clientWidth, clientHeight} = beanCanvas;
+  if (!clientWidth || !clientHeight) return;
+  renderer.setSize(clientWidth, clientHeight, false);
+  if (camera){
     camera.aspect = clientWidth / clientHeight;
     camera.updateProjectionMatrix();
   }
 }
 
-// ---------- Scroll interactions (scale the bean slightly)
+/* ---------- Scroll scale (subtle) ---------- */
 function setupScroll() {
   const hero = qs('#hero');
+  if (!hero) return;
   const onScroll = () => {
     const rect = hero.getBoundingClientRect();
     const visible = Math.max(0, Math.min(1, rect.bottom / window.innerHeight));
@@ -179,18 +155,38 @@ function setupScroll() {
   onScroll();
 }
 
-// ---------- Boot
-window.addEventListener('load', () => {
-  // mount three
-  initThree();
-  setupScroll();
-
-  // gentle delay then hide preloader
+/* ---------- Transition helpers ---------- */
+function hidePreloader() {
+  const p = qs('#preloader');
+  if (!p) { document.body.classList.add('loaded'); return; }
+  p.classList.add('fade-out');            // запускаем анимацию исчезновения
   setTimeout(() => {
-    qs('#preloader').classList.add('hidden');
+    p.remove();                           // убираем прелоадер из DOM
+    document.body.classList.add('loaded');/* включаем появление контента */
   }, 1100);
+}
+
+/* ---------- Boot with fail-safe ---------- */
+window.addEventListener('load', () => {
+  let ok = true;
+  try {
+    if (!beanCanvas) throw new Error('Bean canvas not found');
+    initThree();
+    setupScroll();
+  } catch (e) {
+    ok = false;
+    console.error('[Arterra] Init error:', e);
+  } finally {
+    setTimeout(hidePreloader, ok ? 900 : 300);
+  }
 });
 
 window.addEventListener('resize', () => {
-  resizeThree();
+  if (renderer) fitRenderer();
 });
+
+// Extra safety: hide loader after 4s even if something goes wrong
+setTimeout(() => {
+  const p = qs('#preloader');
+  if (p && !document.body.classList.contains('loaded')) hidePreloader();
+}, 4000);
