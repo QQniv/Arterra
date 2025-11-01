@@ -1,29 +1,30 @@
 /* ======================================================
-   ARTERRA — app.js (centering, visibility, camera framing)
+   ARTERRA — app.js (full)
    - RU/EN, overlay-меню, прелоадер с «пылью»
-   - THREE + GLTFLoader + DRACOLoader (Sketchfab-friendly)
-   - Центрированное 3D-зерно, фоллбек-процедурная модель
+   - THREE r152.2 + GLTFLoader + DRACOLoader (NON-module)
+   - Центрированное 3D-зерно (wrapper), авто-кадр камеры
+   - Скролл замедляет вращение, тень-земля, HUD
 ====================================================== */
 
-/* ---------- helpers ---------- */
+/* ------------ helpers ------------ */
 const qs  = (s, el=document) => el.querySelector(s);
 const qsa = (s, el=document) => [...el.querySelectorAll(s)];
 
-/* ---------- HUD (диагностика) ---------- */
-(function addHUD(){
-  const d=document.createElement('div');
-  d.id='hud';
-  d.style.cssText='position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,.6);color:#fff;font:12px/1.3 Inter,system-ui,sans-serif;padding:8px 10px;border-radius:10px;backdrop-filter:blur(4px);display:none';
-  d.textContent='init…';
-  document.body.appendChild(d);
+/* ------------ HUD (diag) ---------- */
+(function(){
+  const box = document.createElement('div');
+  box.id='hud';
+  box.style.cssText='position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,.6);color:#fff;font:12px/1.3 Inter,system-ui,sans-serif;padding:8px 10px;border-radius:10px;backdrop-filter:blur(4px);display:none';
+  box.textContent='init…';
+  document.body.appendChild(box);
 })();
 function hud(msg){ const el=qs('#hud'); if(el){ el.style.display='block'; el.textContent=msg; }}
 
-/* ---------- год ---------- */
+/* ------------ footer year --------- */
 const yearEl = qs('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-/* ---------- i18n ---------- */
-const translations = {
+/* ------------ i18n ---------------- */
+const translations={
   ru:{menu:"Меню",nav_tech:"Технология",nav_sustain:"Устойчивость",nav_products:"Продукты",nav_contact:"Контакты",
     h1_line1:"Искусственная природа.",h1_line2:"Настоящий кофе.",
     hero_p:"Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество и открыть новое поколение устойчивого вкуса.",
@@ -41,40 +42,39 @@ const translations = {
     hero_p:"We cultivate coffee in artificial plantations to end deforestation, stabilize quality and unlock a new generation of sustainable taste.",
     cta_method:"Explore our method",cta_shop:"Shop (Moscow)",tech_h2:"Artificial plantations explained",
     tech_lead:"Controlled light. Precise nutrients. Recycled water. Zero forest loss. Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.",
-    card1_h:"Precision Growth",card1_p:"Sensor grids monitor humidity, pH, EC and canopy transpiration. AI nudges the microclimate within ±0.2°C.",
-    card2_h:"Water Circularity",card2_p:"Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.",
-    card3_h:"No Deforestation",card3_p:"Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.",
+    card1_h:"Precision Growth",card1_p:"Sensor grids monitor humidity, pH, EC and canopy transpiration. AI keeps ±0.2°C microclimate.",
+    card2_h:"Water Circularity",card2_p:"Closed-loop irrigation recovers >90% condensate. Less water — clearer terroir expression.",
+    card3_h:"No Deforestation",card3_p:"Yield per m² exceeds traditional plantations — coffee decoupled from forest land.",
     products_h2:"Products",products_lead:"Clean grid shop for Moscow launch.",
     prodA_h:"Prototype Roast A",prodA_p:"Caramel, citrus, cocoa. 250g",prodB_h:"Prototype Roast B",prodB_p:"Red fruit, florals, silky body. 250g",
     prodC_h:"Green Coffee (B2B)",prodC_p:"Uniform lots for cafés & roasters.",prod_soon:"Coming soon",prod_inquiry:"Inquiry",
     contact_h2:"Contact",contact_lead:"Wholesale & press: hello@arterra.coffee (placeholder)"}
 };
 function setLang(lang){
-  const dict = translations[lang] || translations.ru;
-  qsa('[data-i18n]').forEach(el => { const k=el.getAttribute('data-i18n'); if (dict[k]!==undefined) el.textContent=dict[k]; });
-  const t=qs('#langToggle'); if(t) t.textContent = lang.toUpperCase();
-  localStorage.setItem('lang', lang);
+  const dict=translations[lang]||translations.ru;
+  qsa('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n'); if(dict[k]!=null) el.textContent=dict[k];});
+  const t=qs('#langToggle'); if(t) t.textContent=lang.toUpperCase();
+  localStorage.setItem('lang',lang);
 }
 function initLang(){
-  const start = localStorage.getItem('lang') || 'ru';
+  const start=localStorage.getItem('lang')||'ru';
   setLang(start);
-  const btn = qs('#langToggle');
-  if (btn) btn.addEventListener('click', ()=>{ const cur=localStorage.getItem('lang')||'ru'; setLang(cur==='ru'?'en':'ru'); });
+  const btn=qs('#langToggle');
+  if(btn) btn.addEventListener('click',()=>{ const cur=localStorage.getItem('lang')||'ru'; setLang(cur==='ru'?'en':'ru'); });
 }
 
-/* ---------- overlay-меню ---------- */
+/* ---------- overlay menu ---------- */
 function initMenu(){
   const ov=qs('#menuOverlay'), open=qs('#menuToggle'), close=qs('#menuClose');
-  const toggle = s => { ov.classList.toggle('open', s); ov.setAttribute('aria-hidden', s?'false':'true'); };
+  const toggle=(s)=>{ ov.classList.toggle('open',s); ov.setAttribute('aria-hidden', s?'false':'true'); };
   open.addEventListener('click',()=>toggle(true));
   close.addEventListener('click',()=>toggle(false));
   ov.addEventListener('click',e=>{ if(e.target===ov) toggle(false); });
 }
 
-/* ---------- прелоадер: пыль + проценты ---------- */
+/* ---------- preloader (dust + %) ---------- */
 if (window.__arterraPreloaderBoot){ clearInterval(window.__arterraPreloaderBoot); window.__arterraPreloaderBoot=null; }
-(()=>{
-  const canvas=qs('#dust'); if(!canvas) return;
+(()=>{ const canvas=qs('#dust'); if(!canvas) return;
   const ctx=canvas.getContext('2d'); let w,h,parts=[];
   function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight;
     const count=Math.min(140,Math.floor((w*h)/18000));
@@ -93,31 +93,23 @@ if (window.__arterraPreloaderBoot){ clearInterval(window.__arterraPreloaderBoot)
 function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classList.add('loaded');return;}
   p.classList.add('fade-out'); setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); }, 900); }
 
-/* ---------- THREE: центрированное зерно ---------- */
+/* --------------- THREE --------------- */
 let renderer, scene, camera, bean, ground, keyLight;
 const beanCanvas = qs('#bean');
+const BEAN_REL_PATH='assets/coffee_bean.glb';
+const BEAN_GLTF_URL=new URL(BEAN_REL_PATH,document.baseURI).href;
 
-/* Путь к GLB */
-const BEAN_REL_PATH = 'assets/coffee_bean.glb';
-const BEAN_GLTF_URL = new URL(BEAN_REL_PATH, document.baseURI).href;
-
-/* Материалы — делаем видимыми */
-function enhance(m){
+function enhanceMat(m){
   if(!m) return;
-  if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial){
-    m.transparent = false;
-    m.opacity = 1.0;
-    m.side = THREE.DoubleSide;
-    m.roughness = Math.min(0.9, Math.max(0.2, m.roughness ?? 0.42));
-    m.metalness = Math.min(0.2, Math.max(0.02, m.metalness ?? 0.08));
-    if ('clearcoat' in m){ m.clearcoat = Math.max(m.clearcoat ?? 0.5, 0.5); m.clearcoatRoughness = 0.35; }
+  if(m.isMeshStandardMaterial||m.isMeshPhysicalMaterial){
+    m.transparent=false; m.opacity=1; m.side=THREE.DoubleSide;
+    m.roughness = m.roughness??0.42; m.metalness = m.metalness??0.08;
+    if('clearcoat' in m){ m.clearcoat=Math.max(0.5,m.clearcoat??0.5); m.clearcoatRoughness=0.35; }
   }
 }
 
-/* Фоллбек — процедурное зерно */
 function makeFallback(){
-  const g=new THREE.SphereGeometry(1,144,144), v=new THREE.Vector3();
-  const pos=g.attributes.position;
+  const g=new THREE.SphereGeometry(1,144,144), v=new THREE.Vector3(), pos=g.attributes.position;
   for(let i=0;i<pos.count;i++){
     v.fromBufferAttribute(pos,i);
     v.y*=0.78; v.x*=0.94; v.z*=1.10;
@@ -125,12 +117,10 @@ function makeFallback(){
     pos.setXYZ(i,v.x,v.y,v.z);
   }
   g.computeVertexNormals();
-  const mat=new THREE.MeshPhysicalMaterial({ color:0x6f4e37, roughness:0.44, metalness:0.08,
-    clearcoat:0.5, clearcoatRoughness:0.35, sheen:0.6, sheenColor:new THREE.Color(0x5e3f2b), sheenRoughness:0.5 });
+  const mat=new THREE.MeshPhysicalMaterial({color:0x6f4e37,roughness:0.44,metalness:0.08,clearcoat:0.5,clearcoatRoughness:0.35});
   bean=new THREE.Mesh(g,mat); bean.castShadow=true; scene.add(bean);
 }
 
-/* Рендерер под квадратный canvas */
 function fit(){
   const w=beanCanvas.clientWidth||600; renderer.setSize(w,w,false);
   camera.aspect=1; camera.updateProjectionMatrix();
@@ -140,19 +130,18 @@ function initThree(){
   if(typeof THREE==='undefined'){ hud('THREE не загрузился'); return; }
   hud('three ✔︎');
 
-  renderer = new THREE.WebGLRenderer({canvas:beanCanvas, antialias:true, alpha:true});
+  renderer=new THREE.WebGLRenderer({canvas:beanCanvas,antialias:true,alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setClearColor(0x000000,0);
   renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.physicallyCorrectLights = true;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.physicallyCorrectLights=true;
 
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(35,1,0.1,100);
-  camera.position.set(0,0.65,3.0);
-  camera.lookAt(0,0,0);
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(35,1,0.1,100);
+  camera.position.set(0,0.65,3.0); camera.lookAt(0,0,0);
 
-  keyLight = new THREE.DirectionalLight(0xffffff,1.0);
+  keyLight=new THREE.DirectionalLight(0xffffff,1.0);
   keyLight.position.set(2,3,2); keyLight.castShadow=true; keyLight.shadow.mapSize.set(1024,1024); scene.add(keyLight);
   scene.add(new THREE.DirectionalLight(0xffffff,0.35)).position.set(-2,1,-2);
   scene.add(new THREE.PointLight(0xffe2c4,0.35,10,2)).position.set(-1.6,1.2,1.8);
@@ -161,116 +150,96 @@ function initThree(){
   const g=new THREE.PlaneGeometry(6,6), m=new THREE.ShadowMaterial({opacity:0.16});
   ground=new THREE.Mesh(g,m); ground.rotation.x=-Math.PI/2; ground.position.y=-0.9; ground.receiveShadow=true; scene.add(ground);
 
-  fit(); addEventListener('resize', ()=>renderer && fit(), {passive:true});
+  fit(); addEventListener('resize',()=>renderer&&fit(),{passive:true});
 
-  /* === GLTF + DRACO === */
-  if (!THREE.GLTFLoader){ hud('Нет GLTFLoader'); makeFallback(); hidePreloader(); animate(); return; }
-  const gltfLoader = new THREE.GLTFLoader();
-  if (THREE.DRACOLoader){
-    const draco = new THREE.DRACOLoader();
-    draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/libs/draco/');
-    draco.setDecoderConfig({ type: 'js' });
-    gltfLoader.setDRACOLoader(draco);
-  } else {
-    hud('DRACO не подключен — пробую без него');
-  }
+  if(!THREE.GLTFLoader){ hud('Нет GLTFLoader'); makeFallback(); hidePreloader(); animate(); return; }
+  const loader=new THREE.GLTFLoader();
+  if(THREE.DRACOLoader){
+    const draco=new THREE.DRACOLoader();
+    draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/libs/draco/');
+    draco.setDecoderConfig({type:'js'}); loader.setDRACOLoader(draco);
+  }else{ hud('DRACO off'); }
 
-  // Включено: радуга по нормалям для проверки видимости.
-  const VIS_DEBUG = true; // ← после успеха переключи на false
+  const VIS_DEBUG=true; // set to false after you see the bean
 
-  let loaded = false;
-  const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 6000);
+  let loaded=false;
+  const safety=setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } },6000);
 
-  gltfLoader.load(
+  loader.load(
     BEAN_GLTF_URL,
     (gltf)=>{
-      loaded = true; clearTimeout(safety); hud('model ✔︎');
+      loaded=true; clearTimeout(safety); hud('model ✔︎');
+      const wrapper=new THREE.Group();
+      const model=gltf.scene||gltf.scenes?.[0];
+      wrapper.add(model); scene.add(wrapper);
 
-      // 1) Обёртка и добавление
-      const wrapper = new THREE.Group();
-      const model = gltf.scene || gltf.scenes?.[0];
-      wrapper.add(model);
-      scene.add(wrapper);
-
-      // 2) Материалы
       model.traverse(o=>{
-        if (o.isMesh){
-          o.castShadow = true; o.receiveShadow = false;
-          if (VIS_DEBUG){
-            o.material = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
-          } else {
-            const mats = Array.isArray(o.material) ? o.material : [o.material];
-            mats.forEach(enhance);
+        if(o.isMesh){
+          o.castShadow=true; o.receiveShadow=false;
+          if(VIS_DEBUG){ o.material=new THREE.MeshNormalMaterial({side:THREE.DoubleSide}); }
+          else{
+            const mats=Array.isArray(o.material)?o.material:[o.material];
+            mats.forEach(enhanceMat);
           }
         }
       });
 
-      // 3) Центр и масштаб
-      model.updateWorldMatrix(true, true);
-      const rawBox = new THREE.Box3().setFromObject(model);
-      const size   = rawBox.getSize(new THREE.Vector3());
-      const center = rawBox.getCenter(new THREE.Vector3());
-      model.position.sub(center);
-      model.updateWorldMatrix(true, true);
+      model.updateWorldMatrix(true,true);
+      const raw=new THREE.Box3().setFromObject(model);
+      const size=raw.getSize(new THREE.Vector3());
+      const center=raw.getCenter(new THREE.Vector3());
+      model.position.sub(center); model.updateWorldMatrix(true,true);
 
-      const maxDim = Math.max(size.x, size.y, size.z) || 1.0;
-      const target = 2.1;
-      const scale  = target / maxDim;
-      wrapper.scale.setScalar(scale);
+      const maxDim=Math.max(size.x,size.y,size.z)||1;
+      const scale=2.1/maxDim; wrapper.scale.setScalar(scale);
 
-      // 4) Кадрируем камеру по Bounding Sphere
-      const box = new THREE.Box3().setFromObject(wrapper);
-      const sphere = new THREE.Sphere(); box.getBoundingSphere(sphere);
-      const fov = camera.fov * (Math.PI / 180);
-      const dist = sphere.radius / Math.tan(fov / 2);
-      camera.position.set(0, sphere.center.y + sphere.radius * 0.3, dist * 1.15);
+      const box=new THREE.Box3().setFromObject(wrapper);
+      const sphere=new THREE.Sphere(); box.getBoundingSphere(sphere);
+      const fov=camera.fov*(Math.PI/180);
+      const dist=sphere.radius/Math.tan(fov/2);
+      camera.position.set(0, sphere.center.y+sphere.radius*0.3, dist*1.15);
       camera.lookAt(sphere.center.clone());
-      camera.near = Math.max(0.01, dist - sphere.radius * 4.0);
-      camera.far  = dist + sphere.radius * 8.0;
+      camera.near=Math.max(0.01, dist - sphere.radius*4.0);
+      camera.far = dist + sphere.radius*8.0;
       camera.updateProjectionMatrix();
 
-      // 5) Положим тень под объект
-      ground.position.y = sphere.center.y - sphere.radius * 0.95;
+      ground.position.y=sphere.center.y - sphere.radius*0.95;
 
       hidePreloader();
-      bean = wrapper; // крутим wrapper
+      bean=wrapper;
     },
     undefined,
-    (err)=>{ loaded=true; clearTimeout(safety); hud('GLB error → fallback'); console.warn('[GLB error]', err); makeFallback(); hidePreloader(); }
+    (err)=>{ loaded=true; clearTimeout(safety); hud('GLB error → fallback'); console.warn('[GLB error]',err); makeFallback(); hidePreloader(); }
   );
 
   animate();
 }
 
-/* ---------- анимация и скролл ---------- */
-let lastY = scrollY, spinBoost = 0, scrollProgress = 0;
+/* ------------ animation + scroll ----------- */
+let lastY=scrollY, spinBoost=0, scrollProgress=0;
 function animate(){
   requestAnimationFrame(animate);
-  spinBoost *= 0.94;
-  const base = 0.006*(1.0 - scrollProgress*0.85), spin = base + spinBoost;
-  if (bean){
-    bean.rotation.y += spin;
-    bean.rotation.x = Math.sin(performance.now()*0.0012)*0.05*(1.0 - scrollProgress*0.9);
-    keyLight.position.x = 2 + Math.sin(performance.now()*0.0008)*0.6*(1.0 - scrollProgress);
+  spinBoost*=0.94;
+  const base=0.006*(1.0 - scrollProgress*0.85), spin=base+spinBoost;
+  if(bean){
+    bean.rotation.y+=spin;
+    bean.rotation.x=Math.sin(performance.now()*0.0012)*0.05*(1.0 - scrollProgress*0.9);
+    keyLight.position.x=2 + Math.sin(performance.now()*0.0008)*0.6*(1.0 - scrollProgress);
   }
-  renderer.render(scene, camera);
+  renderer.render(scene,camera);
 }
 function initScroll(){
   const onScroll=()=>{
-    const vp = innerHeight, dy = Math.abs(scrollY - lastY); lastY = scrollY;
-    spinBoost += Math.min(0.02, dy/5000);
-    scrollProgress = Math.min(1, Math.max(0, (scrollY%vp)/vp));
-    if (ground && ground.material) ground.material.opacity = 0.16*(1.0 - Math.min(1, scrollProgress*0.9));
+    const vp=innerHeight, dy=Math.abs(scrollY-lastY); lastY=scrollY;
+    spinBoost+=Math.min(0.02, dy/5000);
+    scrollProgress=Math.min(1, Math.max(0, (scrollY%vp)/vp));
+    if(ground&&ground.material) ground.material.opacity=0.16*(1.0 - Math.min(1, scrollProgress*0.9));
   };
-  addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
 }
 
-/* ---------- boot ---------- */
+/* --------------- boot --------------- */
 initLang();
 initMenu();
-
-try{ initThree(); initScroll(); }
-catch(e){ console.error(e); hud('init error'); }
-finally{
-  setTimeout(()=>{ const p=qs('#preloader'); if(p && !document.body.classList.contains('loaded')) hidePreloader(); }, 7000);
-}
+try{ initThree(); initScroll(); }catch(e){ console.error(e); hud('init error'); }
+finally{ setTimeout(()=>{ const p=qs('#preloader'); if(p && !document.body.classList.contains('loaded')) hidePreloader(); },7000); }
