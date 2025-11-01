@@ -1,24 +1,28 @@
-/* -------------------------------------------------------
-   ARTERRA — фиксированное 3D-зерно по центру, тексты по бокам
-   Подключение three.js через <script>, GLB: assets/coffee_bean.glb
-------------------------------------------------------- */
+/* ======================================================
+   ARTERRA — полный app.js
+   - RU/EN, overlay-меню, прелоадер с «пылью»
+   - THREE + GLTFLoader + DRACOLoader (Sketchfab-friendly)
+   - Центрированное 3D-зерно (fixed), фоллбек-процедурная модель
+====================================================== */
 
+/* ---------- helpers ---------- */
 const qs  = (s, el=document) => el.querySelector(s);
 const qsa = (s, el=document) => [...el.querySelectorAll(s)];
 
-// ===== HUD для диагностики =====
+/* ---------- HUD (диагностика) ---------- */
 (function addHUD(){
   const d=document.createElement('div');
   d.id='hud';
-  d.innerHTML='init…';
+  d.style.cssText='position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,.6);color:#fff;font:12px/1.3 Inter,system-ui,sans-serif;padding:8px 10px;border-radius:10px;backdrop-filter:blur(4px);display:none';
+  d.textContent='init…';
   document.body.appendChild(d);
 })();
-function hud(msg){ const el=qs('#hud'); if(el){ el.classList.add('show'); el.textContent=msg; }}
+function hud(msg){ const el=qs('#hud'); if(el){ el.style.display='block'; el.textContent=msg; }}
 
-// год
+/* ---------- год ---------- */
 const yearEl = qs('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-/* ===================== I18N ===================== */
+/* ---------- i18n ---------- */
 const translations = {
   ru:{menu:"Меню",nav_tech:"Технология",nav_sustain:"Устойчивость",nav_products:"Продукты",nav_contact:"Контакты",
     h1_line1:"Искусственная природа.",h1_line2:"Настоящий кофе.",
@@ -33,7 +37,8 @@ const translations = {
     prodC_h:"Зелёный кофе (B2B)",prodC_p:"Ровные лоты для кофеен и обжарщиков.",prod_soon:"Скоро",prod_inquiry:"Запрос",
     contact_h2:"Контакты",contact_lead:"Опт и пресса: hello@arterra.coffee (временный адрес)"},
   en:{menu:"Menu",nav_tech:"Technology",nav_sustain:"Sustainability",nav_products:"Products",nav_contact:"Contact",
-    h1_line1:"Artificial nature.",h1_line2:"Real coffee.",hero_p:"We cultivate coffee in artificial plantations to end deforestation, stabilize quality and unlock a new generation of sustainable taste.",
+    h1_line1:"Artificial nature.",h1_line2:"Real coffee.",
+    hero_p:"We cultivate coffee in artificial plantations to end deforestation, stabilize quality and unlock a new generation of sustainable taste.",
     cta_method:"Explore our method",cta_shop:"Shop (Moscow)",tech_h2:"Artificial plantations explained",
     tech_lead:"Controlled light. Precise nutrients. Recycled water. Zero forest loss. Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.",
     card1_h:"Precision Growth",card1_p:"Sensor grids monitor humidity, pH, EC and canopy transpiration. AI nudges the microclimate within ±0.2°C.",
@@ -44,7 +49,6 @@ const translations = {
     prodC_h:"Green Coffee (B2B)",prodC_p:"Uniform lots for cafés & roasters.",prod_soon:"Coming soon",prod_inquiry:"Inquiry",
     contact_h2:"Contact",contact_lead:"Wholesale & press: hello@arterra.coffee (placeholder)"}
 };
-
 function setLang(lang){
   const dict = translations[lang] || translations.ru;
   qsa('[data-i18n]').forEach(el => { const k=el.getAttribute('data-i18n'); if (dict[k]!==undefined) el.textContent=dict[k]; });
@@ -58,7 +62,7 @@ function initLang(){
   if (btn) btn.addEventListener('click', ()=>{ const cur=localStorage.getItem('lang')||'ru'; setLang(cur==='ru'?'en':'ru'); });
 }
 
-/* ===== Menu overlay ===== */
+/* ---------- overlay-меню ---------- */
 function initMenu(){
   const ov=qs('#menuOverlay'), open=qs('#menuToggle'), close=qs('#menuClose');
   const toggle = s => { ov.classList.toggle('open', s); ov.setAttribute('aria-hidden', s?'false':'true'); };
@@ -67,7 +71,7 @@ function initMenu(){
   ov.addEventListener('click',e=>{ if(e.target===ov) toggle(false); });
 }
 
-/* ===== Preloader dust + % ===== */
+/* ---------- прелоадер: пыль + проценты ---------- */
 if (window.__arterraPreloaderBoot){ clearInterval(window.__arterraPreloaderBoot); window.__arterraPreloaderBoot=null; }
 (()=>{
   const canvas=qs('#dust'); if(!canvas) return;
@@ -89,135 +93,143 @@ if (window.__arterraPreloaderBoot){ clearInterval(window.__arterraPreloaderBoot)
 function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classList.add('loaded');return;}
   p.classList.add('fade-out'); setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); }, 900); }
 
-/* ===== THREE: центрированное зерно ===== */
-let renderer, scene, camera, bean, ground, lightKey, lightFill;
+/* ---------- THREE: центрированное зерно ---------- */
+let renderer, scene, camera, bean, ground, keyLight;
 const beanCanvas = qs('#bean');
-const BEAN_GLTF_URL = "assets/coffee_bean.glb";
 
-function microRoughness(size=256){
-  const cnv=document.createElement('canvas'); cnv.width=cnv.height=size;
-  const ctx=cnv.getContext('2d'); const img=ctx.createImageData(size,size);
-  for(let y=0;y<size;y++){ for(let x=0;x<size;x++){
-    const nx=x/size, ny=y/size;
-    const v=0.55+0.18*Math.sin((nx*6.0+ny*3.7)*Math.PI)+0.12*Math.sin((nx*10.0+ny*11.0)*Math.PI)+0.06*Math.sin(((nx+ny)*14.0)*Math.PI);
-    const g=(Math.max(0,Math.min(1,v))*255)|0, i=(y*size+x)*4;
-    img.data[i]=img.data[i+1]=img.data[i+2]=g; img.data[i+3]=255; } }
-  ctx.putImageData(img,0,0);
-  const tex=new THREE.CanvasTexture(cnv); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(3,3); return tex;
-}
+/* Надёжный путь к GLB для GitHub Pages */
+const BEAN_REL_PATH = 'assets/coffee_bean.glb';
+const BEAN_GLTF_URL = new URL(BEAN_REL_PATH, document.baseURI).href;
+
+/* Немного «вкуса» материалу */
 function enhance(m){
-  if(!m||!m.isMeshStandardMaterial) return;
-  m.roughness=Math.min(0.52,Math.max(0.28,m.roughness??0.44));
-  m.metalness=Math.min(0.12,Math.max(0.04,m.metalness??0.08));
-  m.clearcoat=(m.clearcoat??0.35)+0.25; m.clearcoatRoughness=(m.clearcoatRoughness??0.4)+0.05;
-  m.sheen=0.6; m.sheenColor=new THREE.Color(0x5e3f2b); m.sheenRoughness=0.5;
-  if(!m.roughnessMap){ m.roughnessMap=microRoughness(256); m.needsUpdate=true; }
+  if(!m || !m.isMeshStandardMaterial) return;
+  m.roughness = 0.42;
+  m.metalness = 0.08;
+  m.clearcoat = 0.55;
+  m.clearcoatRoughness = 0.35;
+  m.sheen = 0.6;
+  m.sheenColor = new THREE.Color(0x5e3f2b);
+  m.sheenRoughness = 0.5;
+}
+
+/* Фоллбек — процедурное зерно */
+function makeFallback(){
+  const g=new THREE.SphereGeometry(1,144,144), v=new THREE.Vector3();
+  const pos=g.attributes.position;
+  for(let i=0;i<pos.count;i++){
+    v.fromBufferAttribute(pos,i);
+    v.y*=0.78; v.x*=0.94; v.z*=1.10;
+    const groove=Math.exp(-Math.pow(v.z*1.9,2))*0.26; const side=Math.sign(v.x)||1; v.x-=side*groove;
+    pos.setXYZ(i,v.x,v.y,v.z);
+  }
+  g.computeVertexNormals();
+  const mat=new THREE.MeshPhysicalMaterial({ color:0x6f4e37, roughness:0.44, metalness:0.08,
+    clearcoat:0.5, clearcoatRoughness:0.35, sheen:0.6, sheenColor:new THREE.Color(0x5e3f2b), sheenRoughness:0.5 });
+  enhance(mat);
+  bean=new THREE.Mesh(g,mat); bean.castShadow=true; scene.add(bean);
+}
+
+/* Рендерер под квадратный canvas */
+function fit(){
+  const w=beanCanvas.clientWidth||600; renderer.setSize(w,w,false);
+  camera.aspect=1; camera.updateProjectionMatrix();
 }
 
 function initThree(){
-  if(!beanCanvas) throw new Error('bean canvas not found');
-  if(typeof THREE==='undefined'){ hud('THREE не загрузился'); throw new Error('THREE missing'); }
-  if(!THREE.GLTFLoader){ hud('GLTFLoader не загрузился'); }
-
+  if(typeof THREE==='undefined'){ hud('THREE не загрузился'); return; }
   hud('three ✔︎');
 
-  renderer = new THREE.WebGLRenderer({canvas:beanCanvas,antialias:true,alpha:true});
-  renderer.setClearColor(0x000000,0);
+  renderer = new THREE.WebGLRenderer({canvas:beanCanvas, antialias:true, alpha:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  fit();
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x000000,0);
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
-  scene=new THREE.Scene();
-  camera=new THREE.PerspectiveCamera(35,1,0.1,100);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(35,1,0.1,100);
   camera.position.set(0,0.65,3.0);
 
-  lightKey=new THREE.DirectionalLight(0xffffff,0.95);
-  lightKey.position.set(2.0,3.0,2.0);
-  lightKey.castShadow=true; lightKey.shadow.mapSize.set(1024,1024);
-  scene.add(lightKey);
+  keyLight = new THREE.DirectionalLight(0xffffff,0.95);
+  keyLight.position.set(2,3,2); keyLight.castShadow=true; keyLight.shadow.mapSize.set(1024,1024); scene.add(keyLight);
+  scene.add(new THREE.DirectionalLight(0xffffff,0.35)).position.set(-2,1,-2);
+  scene.add(new THREE.PointLight(0xffe2c4,0.35,10,2)).position.set(-1.6,1.2,1.8);
+  scene.add(new THREE.HemisphereLight(0xffffff,0xe6dccf,0.3));
 
-  lightFill=new THREE.DirectionalLight(0xffffff,0.35);
-  lightFill.position.set(-2.0,1.0,-2.0); scene.add(lightFill);
-
-  const rim=new THREE.PointLight(0xffe2c4,0.35,10,2.0); rim.position.set(-1.6,1.2,1.8); scene.add(rim);
-  const hemi=new THREE.HemisphereLight(0xffffff,0xe6dccf,0.3); scene.add(hemi);
-
-  const g=new THREE.PlaneGeometry(6,6);
-  const m=new THREE.ShadowMaterial({opacity:0.16});
+  const g=new THREE.PlaneGeometry(6,6), m=new THREE.ShadowMaterial({opacity:0.16});
   ground=new THREE.Mesh(g,m); ground.rotation.x=-Math.PI/2; ground.position.y=-0.9; ground.receiveShadow=true; scene.add(ground);
 
-  const loader = new THREE.GLTFLoader();
-  loader.load(
+  fit(); addEventListener('resize', ()=>renderer && fit(), {passive:true});
+
+  /* === GLTF + DRACO === */
+  if (!THREE.GLTFLoader){ hud('Нет GLTFLoader'); makeFallback(); hidePreloader(); animate(); return; }
+
+  const gltfLoader = new THREE.GLTFLoader();
+
+  if (THREE.DRACOLoader){
+    const draco = new THREE.DRACOLoader();
+    draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/libs/draco/');
+    draco.setDecoderConfig({ type: 'js' }); // можно сменить на WASM: {type:'wasm'}
+    gltfLoader.setDRACOLoader(draco);
+  } else {
+    hud('DRACO не подключен — пробую без него');
+  }
+
+  let loaded = false;
+  const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 5500);
+
+  gltfLoader.load(
     BEAN_GLTF_URL,
     (gltf)=>{
-      hud('model ✔︎');
-      const model=gltf.scene;
+      loaded = true; clearTimeout(safety); hud('model ✔︎');
+      const model = gltf.scene;
       model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=false; enhance(o.material); } });
-      bean=model;
-      const box=new THREE.Box3().setFromObject(bean), size=new THREE.Vector3(); box.getSize(size);
-      const s=2.1/Math.max(size.x,size.y,size.z); bean.scale.setScalar(s);
-      scene.add(bean);
+
+      // нормализация размера
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const s = 2.1/Math.max(size.x,size.y,size.z);
+      model.scale.setScalar(s);
+
+      bean = model; scene.add(bean);
       hidePreloader();
     },
     undefined,
-    (err)=>{ console.warn('[Arterra] GLB load failed, fallback:', err); hud('GLB fail → fallback'); makeFallback(); hidePreloader(); }
+    (err)=>{ loaded=true; clearTimeout(safety); hud('GLB error → fallback'); console.warn('[GLB error]', err); makeFallback(); hidePreloader(); }
   );
 
   animate();
 }
 
-function makeFallback(){
-  const g=new THREE.SphereGeometry(1,144,144);
-  const pos=g.attributes.position, v=new THREE.Vector3();
-  for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i);
-    v.y*=0.78; v.x*=0.94; v.z*=1.10; const groove=Math.exp(-Math.pow(v.z*1.9,2))*0.26; const side=Math.sign(v.x)||1; v.x-=side*groove;
-    pos.setXYZ(i,v.x,v.y,v.z); }
-  g.computeVertexNormals();
-  const mat=new THREE.MeshPhysicalMaterial({color:0x6f4e37,roughness:0.44,metalness:0.08,clearcoat:0.5,clearcoatRoughness:0.35,
-    sheen:0.6,sheenColor:new THREE.Color(0x5e3f2b),sheenRoughness:0.5});
-  enhance(mat);
-  bean=new THREE.Mesh(g,mat); bean.castShadow=true; scene.add(bean);
-}
-
-/* ===== Рендер/скролл ===== */
-let lastY=scrollY, spinBoost=0, scrollProgress=0;
+/* ---------- анимация и скролл ---------- */
+let lastY = scrollY, spinBoost = 0, scrollProgress = 0;
 function animate(){
   requestAnimationFrame(animate);
-  spinBoost*=0.94;
-  const base=0.006*(1.0-scrollProgress*0.85), spin=base+spinBoost;
-  if(bean){
-    bean.rotation.y+=spin;
-    bean.rotation.x=Math.sin(performance.now()*0.0012)*0.05*(1.0-scrollProgress*0.9);
-    lightKey.position.x=2.0+Math.sin(performance.now()*0.0008)*0.6*(1.0-scrollProgress);
+  spinBoost *= 0.94;
+  const base = 0.006*(1.0 - scrollProgress*0.85), spin = base + spinBoost;
+  if (bean){
+    bean.rotation.y += spin;
+    bean.rotation.x = Math.sin(performance.now()*0.0012)*0.05*(1.0 - scrollProgress*0.9);
+    keyLight.position.x = 2 + Math.sin(performance.now()*0.0008)*0.6*(1.0 - scrollProgress);
   }
-  renderer.render(scene,camera);
-}
-function fit(){
-  const w=beanCanvas.clientWidth||600;
-  renderer.setSize(w,w,false);
-  if(camera){ camera.aspect=1; camera.updateProjectionMatrix(); }
+  renderer.render(scene, camera);
 }
 function initScroll(){
   const onScroll=()=>{
-    const vp=innerHeight;
-    const dy=Math.abs(scrollY-lastY); lastY=scrollY;
-    spinBoost+=Math.min(0.02,dy/5000);
-    scrollProgress=Math.min(1,Math.max(0,(scrollY%vp)/vp));
-    if(ground&&ground.material) ground.material.opacity=0.16*(1.0-Math.min(1,scrollProgress*0.9));
+    const vp = innerHeight, dy = Math.abs(scrollY - lastY); lastY = scrollY;
+    spinBoost += Math.min(0.02, dy/5000);
+    scrollProgress = Math.min(1, Math.max(0, (scrollY%vp)/vp));
+    if (ground && ground.material) ground.material.opacity = 0.16*(1.0 - Math.min(1, scrollProgress*0.9));
   };
-  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  addEventListener('scroll', onScroll, {passive:true}); onScroll();
 }
 
-/* ===== Меню / Язык ===== */
-initLang(); initMenu();
+/* ---------- boot ---------- */
+initLang();
+initMenu();
 
-/* ===== Старт Three ===== */
 try{ initThree(); initScroll(); }
 catch(e){ console.error(e); hud('init error'); }
 finally{
-  // страховка на случай зависшего прелоадера
-  setTimeout(()=>{ const p=qs('#preloader'); if(p && !document.body.classList.contains('loaded')) hidePreloader(); }, 4000);
+  // страховка от «вечного» прелоадера
+  setTimeout(()=>{ const p=qs('#preloader'); if(p && !document.body.classList.contains('loaded')) hidePreloader(); }, 7000);
 }
-
-addEventListener('resize', ()=>{ if(renderer) fit(); });
