@@ -3,14 +3,14 @@
   --ink:#101113;
   --muted:#5b616b;
   --line:#eceff3;
-  --accent: #17b169;   /* bio green */
-  --coffee:#7B5C3B;    /* warm coffee-brown for logo/accents */
-  --shadow: 0 20px 60px rgba(0,0,0,.08);
+  --accent:#17b169;   /* bio green */
+  --coffee:#7B5C3B;   /* warm coffee-brown for logo/accents */
+  --shadow:0 20px 60px rgba(0,0,0,.08);
   --radius:18px;
 
-  --h1: clamp(36px, 5vw, 64px);
-  --h2: clamp(26px, 4vw, 40px);
-  --h3: clamp(18px, 2.4vw, 22px);
+  --h1:clamp(36px,5vw,64px);
+  --h2:clamp(26px,4vw,40px);
+  --h3:clamp(18px,2.4vw,22px);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -24,47 +24,67 @@ body{
   text-rendering:optimizeLegibility;
 }
 
-/* Preloader */
+/* ===================== PRELOADER ===================== */
 #preloader{
   position:fixed; inset:0; background:#fff; z-index:9999;
   display:grid; place-items:center;
-  transition:opacity .6s ease, visibility .6s ease;
 }
-#preloader.hidden{opacity:0; visibility:hidden}
 #dust{position:absolute; inset:0}
 .loader-center{display:grid; place-items:center; gap:16px}
 .seed-to-bean{
   width:72px; height:72px; border-radius:50%;
-  background: radial-gradient(60% 60% at 50% 40%, #c9b8a6 0%, #a58869 55%, #7b5c3b 100%);
-  animation: morph 2.2s ease-in-out infinite;
-  box-shadow: inset 0 0 18px rgba(0,0,0,.15), 0 10px 24px rgba(0,0,0,.08);
+  background:radial-gradient(60% 60% at 50% 40%, #c9b8a6 0%, #a58869 55%, #7b5c3b 100%);
+  animation:morph 2.2s ease-in-out infinite;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.15), 0 10px 24px rgba(0,0,0,.08);
 }
 @keyframes morph{
-  0%{transform:scale(0.95) rotate(0deg); border-radius:56% 44% 54% 46%/60% 40% 60% 40%}
+  0%{transform:scale(.95) rotate(0deg); border-radius:56% 44% 54% 46%/60% 40% 60% 40%}
   50%{transform:scale(1.05) rotate(8deg); border-radius:44% 56% 40% 60%/48% 52% 48% 52%}
-  100%{transform:scale(0.95) rotate(0deg); border-radius:56% 44% 54% 46%/60% 40% 60% 40%}
+  100%{transform:scale(.95) rotate(0deg); border-radius:56% 44% 54% 46%/60% 40% 60% 40%}
 }
 .loader-caption{display:flex; flex-direction:column; align-items:center; gap:4px}
 .loader-caption .brand{
-  font-family:"Space Grotesk", Inter, sans-serif;
+  font-family:"Space Grotesk",Inter,sans-serif;
   letter-spacing:.18em; font-weight:600; color:var(--coffee);
 }
 .loader-caption .progress{font-size:12px; color:#7a7e8a}
 
-/* Header */
+/* ===== Preloader exit animation (новое) ===== */
+#preloader.fade-out{
+  animation:preloaderExit 1.2s ease forwards;
+}
+@keyframes preloaderExit{
+  0%{opacity:1; transform:scale(1)}
+  40%{transform:scale(1.04)}
+  100%{opacity:0; transform:scale(1.08); visibility:hidden}
+}
+
+/* ===== Page reveal (новое) ===== */
+main, header, footer{
+  opacity:0;
+  transform:translateY(20px);
+  filter:blur(4px);
+}
+body.loaded main,
+body.loaded header,
+body.loaded footer{
+  opacity:1;
+  transform:none;
+  filter:none;
+  transition:opacity 1.2s ease, transform 1.2s ease, filter 1.2s ease;
+}
+
+/* ===================== HEADER ===================== */
 .site-header{
   position:sticky; top:0; z-index:50;
   backdrop-filter:saturate(180%) blur(10px);
   background:rgba(255,255,255,.65);
   border-bottom:1px solid var(--line);
 }
-.site-header .brand{
-  padding:14px 20px;
-}
+.site-header .brand{padding:14px 20px}
 .site-header .logo{
-  font-family:"Space Grotesk", Inter, sans-serif;
-  font-weight:600; letter-spacing:.18em;
-  color:var(--coffee);
+  font-family:"Space Grotesk",Inter,sans-serif;
+  font-weight:600; letter-spacing:.18em; color:var(--coffee);
 }
 .site-header .nav{
   position:absolute; right:12px; top:10px;
@@ -78,26 +98,24 @@ body{
   background:rgba(23,177,105,.08); color:#0e7e53;
 }
 
-/* Hero */
+/* ===================== HERO ===================== */
 .hero{
   min-height:92svh; display:grid;
-  grid-template-columns: 1.1fr 1fr;
+  grid-template-columns:1.1fr 1fr;
   gap:32px; align-items:center;
-  padding: clamp(20px, 4vw, 48px);
+  padding:clamp(20px,4vw,48px);
 }
 .hero-copy h1{
-  font-family:"Space Grotesk", Inter, sans-serif;
+  font-family:"Space Grotesk",Inter,sans-serif;
   font-size:var(--h1); line-height:1.05; letter-spacing:-.01em;
 }
-.hero-copy p{
-  margin-top:14px; color:var(--muted); font-size:18px; line-height:1.6;
-}
+.hero-copy p{margin-top:14px; color:var(--muted); font-size:18px; line-height:1.6}
 .cta-row{display:flex; gap:14px; margin-top:22px; align-items:center}
 .btn{
   background:var(--ink); color:#fff; text-decoration:none;
   padding:12px 18px; border-radius:12px; box-shadow:var(--shadow);
   border:1px solid rgba(0,0,0,.1);
-  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
 .btn:hover{transform:translateY(-2px)}
 .btn.small{padding:8px 12px; font-size:14px}
@@ -105,50 +123,48 @@ body{
 
 .bean-stage{
   position:relative; aspect-ratio:1/1; width:100%;
-  max-width:680px; justify-self:end; filter: drop-shadow(0 40px 60px rgba(0,0,0,.12));
+  max-width:680px; justify-self:end;
+  /* мягкая тень под холстом */
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.12));
 }
-#bean{width:100%; height:100%; display:block;}
+#bean{width:100%; height:100%; display:block}
 
-/* Sections */
-.section{padding: clamp(48px, 8vw, 120px) clamp(20px, 4vw, 48px); border-top:1px solid var(--line)}
+/* ===================== SECTIONS ===================== */
+.section{padding:clamp(48px,8vw,120px) clamp(20px,4vw,48px); border-top:1px solid var(--line)}
 .section-inner{max-width:1200px; margin:0 auto}
 .section h2{
-  font-family:"Space Grotesk", Inter, sans-serif;
+  font-family:"Space Grotesk",Inter,sans-serif;
   font-size:var(--h2); margin-bottom:10px;
 }
 .section .lead{color:var(--muted); max-width:800px; margin-bottom:24px}
-.cards{
-  display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
-}
+.cards{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
 .card{
   padding:18px; border:1px solid var(--line); border-radius:16px; background:#fff;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 .card:hover{transform:translateY(-3px); box-shadow:var(--shadow); border-color:#e3e7ee}
 .card h3{font-size:var(--h3); margin-bottom:6px; font-weight:600}
 .card p{color:#4e5563; line-height:1.6}
 
-/* Products */
+/* ===================== PRODUCTS ===================== */
 .product-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
-.product-card{
-  padding:16px; border:1px solid var(--line); border-radius:16px; background:#fff;
-}
+.product-card{padding:16px; border:1px solid var(--line); border-radius:16px; background:#fff}
 .product-card .thumb{
-  height:160px; border-radius:12px; background:
-    radial-gradient(60% 60% at 50% 40%, #d9d3cd, #c7b8a9 55%, #a58869 100%);
+  height:160px; border-radius:12px;
+  background:radial-gradient(60% 60% at 50% 40%, #d9d3cd, #c7b8a9 55%, #a58869 100%);
   margin-bottom:12px;
 }
 .product-card h4{font-weight:600; margin-bottom:4px}
 .product-card p{color:#606876; margin-bottom:10px}
 
-/* Footer */
+/* ===================== FOOTER ===================== */
 .site-footer{
   border-top:1px solid var(--line);
   padding:18px 20px; color:#687080; text-align:center;
 }
 
-/* Responsive */
-@media (max-width: 980px){
+/* ===================== RESPONSIVE ===================== */
+@media (max-width:980px){
   .hero{grid-template-columns:1fr; gap:22px}
   .bean-stage{justify-self:center; max-width:520px}
   .cards, .product-grid{grid-template-columns:1fr}
