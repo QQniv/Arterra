@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ARTERRA • Artificial nature. Real coffee.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true">
+    <canvas id="dust"></canvas>
+    <div class="loader-center">
+      <div class="seed-to-bean" aria-hidden="true"></div>
+      <div class="loader-caption">
+        <span class="brand">ARTERRA</span>
+        <span class="progress" id="progressText">Loading 0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo">ARTERRA</span>
+    </div>
+    <nav class="nav">
+      <a href="#tech">Technology</a>
+      <a href="#sustain">Sustainability</a>
+      <a href="#products">Products</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero-copy">
+        <h1>Artificial nature.<br/>Real coffee.</h1>
+        <p>
+          We cultivate coffee in artificial plantations to end deforestation, stabilize quality,
+          and unlock a new generation of sustainable taste.
+        </p>
+        <div class="cta-row">
+          <a href="#tech" class="btn">Explore our method</a>
+          <a href="#products" class="link">Shop (Moscow)</a>
+        </div>
+      </div>
+
+      <!-- Three.js bean canvas -->
+      <div class="bean-stage">
+        <canvas id="bean"></canvas>
+      </div>
+    </section>
+
+    <!-- Technology section -->
+    <section class="section tech" id="tech">
+      <div class="section-inner">
+        <h2>Artificial plantations explained</h2>
+        <p class="lead">
+          Controlled light. Precise nutrients. Recycled water. Zero forest loss.
+          Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.
+        </p>
+
+        <div class="cards">
+          <article class="card">
+            <h3>Precision Growth</h3>
+            <p>Sensor grids monitor humidity, pH, EC, and canopy transpiration. AI nudges the microclimate within ±0.2°C.</p>
+          </article>
+          <article class="card">
+            <h3>Water Circularity</h3>
+            <p>Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.</p>
+          </article>
+          <article class="card">
+            <h3>No Deforestation</h3>
+            <p>Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sustainability (placeholder anchors for later build) -->
+    <section class="section sustain" id="sustain">
+      <div class="section-inner">
+        <h2>Sustainability & Impact</h2>
+        <p class="lead">Live counters (hectares saved, CO₂ avoided, water preserved) coming in the next iteration.</p>
+      </div>
+    </section>
+
+    <!-- Products -->
+    <section class="section products" id="products">
+      <div class="section-inner">
+        <h2>Products</h2>
+        <p class="lead">Clean grid shop for Moscow launch. Payments/integration to be wired later.</p>
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4>Prototype Roast A</h4>
+            <p>Caramel, citrus, cocoa. 250g</p>
+            <button class="btn small" disabled>Coming soon</button>
+          </div>
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4>Prototype Roast B</h4>
+            <p>Red fruit, florals, silky body. 250g</p>
+            <button class="btn small" disabled>Coming soon</button>
+          </div>
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4>Green Coffee (B2B)</h4>
+            <p>Uniform lots for cafés & roasters.</p>
+            <button class="btn small" disabled>Inquiry</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact">
+      <div class="section-inner">
+        <h2>Contact</h2>
+        <p class="lead">Wholesale & press: hello@arterra.coffee (placeholder)</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Arterra</span>
+  </footer>
+
+  <!-- Three.js via CDN -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
