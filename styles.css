@@ -197,3 +197,8 @@ body.loaded main, body.loaded header, body.loaded footer{
   .menu-grid{grid-template-columns:1fr}
   .menu-toggle .menu-label{display:none}
 }
+/* Sketchfab fallback iframe */
+.sketchfab-embed {
+  position:absolute; inset:0; width:100%; height:100%;
+  border:0; display:none; /* по умолчанию скрыт, включим из JS */
+}
