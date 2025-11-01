@@ -1,85 +1,50 @@
 /* -------------------------------------------------------
    ARTERRA — RU/EN + overlay menu + плавный переход
-   GLB-кофезёрно с «микро-текстурами» и студийным светом
-   Автовращение с замедлением при скролле
+   GLB-кофезёрно с микро-текстурой и студийным светом
+   Автовращение + замедление при скролле
 ------------------------------------------------------- */
 
 const qs = (s, el=document) => el.querySelector(s);
 const qsa = (s, el=document) => [...el.querySelectorAll(s)];
 
-// ===== Год в футере
+// ===== Год
 const yearEl = qs('#year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 /* ===================== I18N ===================== */
 const translations = {
-  ru: {
-    menu: "Меню",
-    nav_tech: "Технология",
-    nav_sustain: "Устойчивость",
-    nav_products: "Продукты",
-    nav_contact: "Контакты",
-    h1_line1: "Искусственная природа.",
-    h1_line2: "Настоящий кофе.",
-    hero_p: "Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество и открыть новое поколение устойчивого вкуса.",
-    cta_method: "Посмотреть метод",
-    cta_shop: "Магазин (Москва)",
-    tech_h2: "Как устроены искусственные плантации",
-    tech_lead: "Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса. Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.",
-    card1_h: "Точная вегетация",
-    card1_p: "Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.",
-    card2_h: "Круговорот воды",
-    card2_p: "Замкнутое орошение возвращает >90% конденсата. Меньше воды — чище выражение терруара.",
-    card3_h: "Без вырубки",
-    card3_p: "Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.",
-    sustain_h2: "Устойчивость и влияние",
-    sustain_lead: "Счётчики в реальном времени (сохранённые гектары, СО₂, вода) появятся в следующей итерации.",
-    products_h2: "Продукты",
-    products_lead: "Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.",
-    prodA_h: "Прототип РОСТ A",
-    prodA_p: "Карамель, цитрус, какао. 250 г",
-    prodB_h: "Прототип РОСТ B",
-    prodB_p: "Красные ягоды, цветы, шёлковистое тело. 250 г",
-    prodC_h: "Зелёный кофе (B2B)",
-    prodC_p: "Ровные лоты для кофеен и обжарщиков.",
-    prod_soon: "Скоро",
-    prod_inquiry: "Запрос",
-    contact_h2: "Контакты",
-    contact_lead: "Опт и пресса: hello@arterra.coffee (временный адрес)",
-  },
-  en: {
-    menu: "Menu",
-    nav_tech: "Technology",
-    nav_sustain: "Sustainability",
-    nav_products: "Products",
-    nav_contact: "Contact",
-    h1_line1: "Artificial nature.",
-    h1_line2: "Real coffee.",
-    hero_p: "We cultivate coffee in artificial plantations to end deforestation, stabilize quality and unlock a new generation of sustainable taste.",
-    cta_method: "Explore our method",
-    cta_shop: "Shop (Moscow)",
-    tech_h2: "Artificial plantations explained",
-    tech_lead: "Controlled light. Precise nutrients. Recycled water. Zero forest loss. Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.",
-    card1_h: "Precision Growth",
-    card1_p: "Sensor grids monitor humidity, pH, EC and canopy transpiration. AI nudges the microclimate within ±0.2°C.",
-    card2_h: "Water Circularity",
-    card2_p: "Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.",
-    card3_h: "No Deforestation",
-    card3_p: "Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.",
-    sustain_h2: "Sustainability & Impact",
-    sustain_lead: "Live counters (hectares saved, CO₂ avoided, water preserved) coming in the next iteration.",
-    products_h2: "Products",
-    products_lead: "Clean grid shop for Moscow launch. Payments/integration to be wired later.",
-    prodA_h: "Prototype Roast A",
-    prodA_p: "Caramel, citrus, cocoa. 250g",
-    prodB_h: "Prototype Roast B",
-    prodB_p: "Red fruit, florals, silky body. 250g",
-    prodC_h: "Green Coffee (B2B)",
-    prodC_p: "Uniform lots for cafés & roasters.",
-    prod_soon: "Coming soon",
-    prod_inquiry: "Inquiry",
-    contact_h2: "Contact",
-    contact_lead: "Wholesale & press: hello@arterra.coffee (placeholder)",
-  }
+  ru: { menu:"Меню", nav_tech:"Технология", nav_sustain:"Устойчивость", nav_products:"Продукты", nav_contact:"Контакты",
+    h1_line1:"Искусственная природа.", h1_line2:"Настоящий кофе.",
+    hero_p:"Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество и открыть новое поколение устойчивого вкуса.",
+    cta_method:"Посмотреть метод", cta_shop:"Магазин (Москва)",
+    tech_h2:"Как устроены искусственные плантации",
+    tech_lead:"Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса. Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.",
+    card1_h:"Точная вегетация", card1_p:"Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.",
+    card2_h:"Круговорот воды", card2_p:"Замкнутое орошение возвращает >90% конденсата. Меньше воды — чище выражение терруара.",
+    card3_h:"Без вырубки", card3_p:"Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.",
+    sustain_h2:"Устойчивость и влияние", sustain_lead:"Счётчики в реальном времени (сохранённые гектары, СО₂, вода) появятся в следующей итерации.",
+    products_h2:"Продукты", products_lead:"Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.",
+    prodA_h:"Прототип РОСТ A", prodA_p:"Карамель, цитрус, какао. 250 г",
+    prodB_h:"Прототип РОСТ B", prodB_p:"Красные ягоды, цветы, шёлковистое тело. 250 г",
+    prodC_h:"Зелёный кофе (B2B)", prodC_p:"Ровные лоты для кофеен и обжарщиков.",
+    prod_soon:"Скоро", prod_inquiry:"Запрос",
+    contact_h2:"Контакты", contact_lead:"Опт и пресса: hello@arterra.coffee (временный адрес)" },
+  en: { menu:"Menu", nav_tech:"Technology", nav_sustain:"Sustainability", nav_products:"Products", nav_contact:"Contact",
+    h1_line1:"Artificial nature.", h1_line2:"Real coffee.",
+    hero_p:"We cultivate coffee in artificial plantations to end deforestation, stabilize quality and unlock a new generation of sustainable taste.",
+    cta_method:"Explore our method", cta_shop:"Shop (Moscow)",
+    tech_h2:"Artificial plantations explained",
+    tech_lead:"Controlled light. Precise nutrients. Recycled water. Zero forest loss. Our bio-tech greenhouses create stable microclimates and repeatable flavor profiles.",
+    card1_h:"Precision Growth", card1_p:"Sensor grids monitor humidity, pH, EC and canopy transpiration. AI nudges the microclimate within ±0.2°C.",
+    card2_h:"Water Circularity", card2_p:"Closed-loop irrigation recovers >90% condensate. Less water, better terroir expression.",
+    card3_h:"No Deforestation", card3_p:"Yield per m² exceeds traditional plantations, decoupling coffee from forest land use.",
+    sustain_h2:"Sustainability & Impact",
+    sustain_lead:"Live counters (hectares saved, CO₂ avoided, water preserved) coming in the next iteration.",
+    products_h2:"Products", products_lead:"Clean grid shop for Moscow launch. Payments/integration to be wired later.",
+    prodA_h:"Prototype Roast A", prodA_p:"Caramel, citrus, cocoa. 250g",
+    prodB_h:"Prototype Roast B", prodB_p:"Red fruit, florals, silky body. 250g",
+    prodC_h:"Green Coffee (B2B)", prodC_p:"Uniform lots for cafés & roasters.",
+    prod_soon:"Coming soon", prod_inquiry:"Inquiry",
+    contact_h2:"Contact", contact_lead:"Wholesale & press: hello@arterra.coffee (placeholder)" }
 };
 
 function setLang(lang){
@@ -132,64 +97,51 @@ function hidePreloader(){ const p=qs('#preloader'); if(!p){document.body.classLi
 /* ===================== 3D кофейное зерно (GLB) ===================== */
 let renderer, scene, camera, bean, ground, lightKey, lightFill;
 const beanCanvas = qs('#bean');
+const BEAN_GLTF_URL = "assets/coffee_bean.glb";
 
-/* Если положил файл в корень — оставь так.
-   Если в папку assets/ — поменяй путь на "assets/coffee_bean.glb" */
-const BEAN_GLTF_URL = "coffee_bean.glb";
-
-/* — Процедурная микротекстура для roughness (шершавость обжарки) — */
+/* процедурная микро-карта шершавости (roughness) */
 function makeMicroRoughness(size=256){
   const cnv = document.createElement('canvas'); cnv.width = cnv.height = size;
   const ctx = cnv.getContext('2d');
   const img = ctx.createImageData(size, size);
-  // псевдо-перлин: сумма синусоид разных частот
   for (let y=0; y<size; y++){
     for (let x=0; x<size; x++){
-      const nx = x/size, ny = y/size;
-      const v =
-        0.55 + // базовая roughness
-        0.18*Math.sin( (nx*6.0 + ny*3.7) * Math.PI ) +
-        0.12*Math.sin( (nx*10.0+ ny*11.0) * Math.PI ) +
-        0.06*Math.sin( ((nx+ny)*14.0) * Math.PI );
-      const g = Math.max(0, Math.min(1, v)) * 255 | 0;
-      const i = (y*size + x)*4;
-      img.data[i] = img.data[i+1] = img.data[i+2] = g;
-      img.data[i+3] = 255;
+      const nx=x/size, ny=y/size;
+      const v = 0.55
+        + 0.18*Math.sin((nx*6.0 + ny*3.7)*Math.PI)
+        + 0.12*Math.sin((nx*10.0+ ny*11.0)*Math.PI)
+        + 0.06*Math.sin(((nx+ny)*14.0)*Math.PI);
+      const g = Math.max(0, Math.min(1, v))*255|0;
+      const i = (y*size+x)*4;
+      img.data[i]=img.data[i+1]=img.data[i+2]=g; img.data[i+3]=255;
     }
   }
   ctx.putImageData(img,0,0);
   const tex = new THREE.CanvasTexture(cnv);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.repeat.set(3,3);
-  // roughnessMap должен быть в линейном цветовом пространстве (по умолчанию так и есть)
   return tex;
 }
-
-/* — Усиление материалов: clearcoat, sheen и микро-карта — */
 function enhanceMaterial(mat){
   if (!mat || !mat.isMeshStandardMaterial) return;
   mat.roughness = Math.min(0.52, Math.max(0.28, mat.roughness ?? 0.44));
   mat.metalness = Math.min(0.12, Math.max(0.04, mat.metalness ?? 0.08));
-  // слегка «влажный» блик
   mat.clearcoat = Math.min(1.0, (mat.clearcoat ?? 0.35) + 0.25);
   mat.clearcoatRoughness = Math.min(1.0, (mat.clearcoatRoughness ?? 0.4) + 0.05);
-  // шелковистость
   mat.sheen = 0.6;
   mat.sheenColor = new THREE.Color(0x5e3f2b);
   mat.sheenRoughness = 0.5;
-  // добавляем микро-шероховатость, только если нет своей карты
   if (!mat.roughnessMap){
     mat.roughnessMap = makeMicroRoughness(256);
     mat.needsUpdate = true;
   }
 }
 
-/* — Сцена — */
 function initThree(){
   if (!beanCanvas) throw new Error('Bean canvas not found');
 
   renderer = new THREE.WebGLRenderer({canvas: beanCanvas, antialias:true, alpha:true});
-  renderer.setClearColor(0x000000, 0); // прозрачный фон
+  renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   fitRenderer();
   renderer.shadowMap.enabled = true;
@@ -200,7 +152,7 @@ function initThree(){
   camera = new THREE.PerspectiveCamera(35, beanCanvas.clientWidth/beanCanvas.clientHeight, 0.1, 100);
   camera.position.set(0, 0.65, 3.0);
 
-  // Студийный свет: ключевой + заполняющий + лёгкий римлайт
+  // студийный свет
   lightKey = new THREE.DirectionalLight(0xffffff, 0.9);
   lightKey.position.set(2.0, 3.0, 2.0);
   lightKey.castShadow = true;
@@ -211,14 +163,14 @@ function initThree(){
   lightFill.position.set(-2.0, 1.0, -2.0);
   scene.add(lightFill);
 
-  const rim = new THREE.PointLight(0xffe2c4, 0.35, 10, 2.0); // тёплый кант
+  const rim = new THREE.PointLight(0xffe2c4, 0.35, 10, 2.0);
   rim.position.set(-1.6, 1.2, 1.8);
   scene.add(rim);
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0xe6dccf, 0.35);
   scene.add(hemi);
 
-  // Приёмник тени
+  // теневая подложка
   const groundGeo = new THREE.PlaneGeometry(6,6);
   const groundMat = new THREE.ShadowMaterial({opacity:0.18});
   ground = new THREE.Mesh(groundGeo, groundMat);
@@ -227,7 +179,7 @@ function initThree(){
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Загружаем GLB
+  // загрузка GLB
   const loader = new THREE.GLTFLoader();
   loader.load(
     BEAN_GLTF_URL,
@@ -240,31 +192,29 @@ function initThree(){
         }
       });
       bean = model;
-      // Нормализуем масштаб, если автор модели сделал очень мелко/крупно
+
+      // нормализуем масштаб (на всякий случай)
       const box = new THREE.Box3().setFromObject(bean);
       const size = new THREE.Vector3(); box.getSize(size);
       const maxDim = Math.max(size.x, size.y, size.z);
-      const target = 2.1; // хотим ~2 ед. по самой крупной стороне
+      const target = 2.1;
       const s = target / maxDim;
       bean.scale.setScalar(s);
+
       scene.add(bean);
       hidePreloader();
     },
-    (xhr) => {
-      // можно обновить прогрессбар прелоадера (необязательно)
-      // const k = Math.min(100, (xhr.loaded / (xhr.total || 1))*100);
-    },
+    () => {},
     (err) => {
-      console.warn('[Arterra] GLB load failed, fallback to procedural:', err);
-      makeProceduralBean(); hidePreloader();
+      console.warn('[Arterra] GLB load failed:', err);
+      makeProceduralFallback(); hidePreloader();
     }
   );
 
   animate();
 }
 
-/* — Процедурная «заглушка», если GLB вдруг не загрузится — */
-function makeProceduralBean(){
+function makeProceduralFallback(){
   const g = new THREE.SphereGeometry(1, 128, 128);
   const pos = g.attributes.position, v = new THREE.Vector3();
   for (let i=0;i<pos.count;i++){
@@ -289,17 +239,15 @@ function makeProceduralBean(){
   scene.add(bean);
 }
 
-/* — Рендер-цикл + замедление при скролле — */
+/* ===== Рендер + скролл-замедление ===== */
 let scrollProgress = 0;
-
 function animate(){
   requestAnimationFrame(animate);
-  const slow = scrollProgress;                 // 0..1
-  const spin = 0.005 * (1.0 - slow*0.95);     // почти до стопа
+  const slow = scrollProgress;
+  const spin = 0.005 * (1.0 - slow*0.95);
   if (bean){
     bean.rotation.y += spin;
     bean.rotation.x = Math.sin(performance.now()*0.0012) * 0.05 * (1.0 - slow*0.9);
-    // чуть шевелим ключевой свет, пока над героем
     lightKey.position.x = 2.0 + Math.sin(performance.now()*0.0008)*0.6*(1.0 - slow);
   }
   renderer.render(scene, camera);
@@ -312,7 +260,7 @@ function fitRenderer(){
   if (camera){ camera.aspect = clientWidth/clientHeight; camera.updateProjectionMatrix(); }
 }
 
-/* — Прогресс скролла (0 вверху → 1 после hero) — */
+/* ===== Прогресс скролла ===== */
 function initScrollDamping(){
   const hero = qs('#hero');
   const onScroll = () => {
@@ -331,24 +279,15 @@ function initScrollDamping(){
 }
 
 /* ===================== Boot ===================== */
-function initAll(){
-  initLang();
-  initMenu();
-  try{
-    initThree();
-    initScrollDamping();
-  }catch(e){
-    console.error('[Arterra] Init error:', e);
-  }finally{
-    // если модель грузится дольше обычного — всё равно спрячем прелоадер
+window.addEventListener('load', () => {
+  initLang(); initMenu();
+  try{ initThree(); initScrollDamping(); }
+  catch(e){ console.error('[Arterra] Init error:', e); }
+  finally{
     setTimeout(() => {
       const p = qs('#preloader');
       if (p && !document.body.classList.contains('loaded')) hidePreloader();
     }, 4000);
   }
-}
-
-window.addEventListener('load', () => {
-  initAll();
 });
-window.addEventListener('resize', () => { if (renderer) fitRenderer(); });
+addEventListener('resize', () => { if (renderer) fitRenderer(); });
