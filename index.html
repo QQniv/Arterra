@@ -2,9 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>ARTERRA • Artificial nature. Real coffee.</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ARTERRA • Искусственная природа. Настоящий кофе.</title>
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -54,21 +55,88 @@
   <main>
     <section class="hero" id="hero">
       <div class="hero-copy">
-        <h1><span data-i18n="h1_line1">Искусственная природа.</span><br/><span data-i18n="h1_line2">Настоящий кофе.</span></h1>
-        <p data-i18n="hero_p">Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество и открыть новое поколение устойчивого вкуса.</p>
+        <h1>
+          <span data-i18n="h1_line1">Искусственная природа.</span><br/>
+          <span data-i18n="h1_line2">Настоящий кофе.</span>
+        </h1>
+        <p data-i18n="hero_p">
+          Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов,
+          стабилизировать качество и открыть новое поколение устойчивого вкуса.
+        </p>
         <div class="cta-row">
           <a href="#tech" class="btn" data-i18n="cta_method">Посмотреть метод</a>
           <a href="#products" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
         </div>
       </div>
 
+      <!-- 3D Bean -->
       <div class="bean-stage">
         <canvas id="bean"></canvas>
       </div>
     </section>
 
-    <!-- ... остальные секции без изменений ... -->
+    <!-- Tech -->
+    <section class="section tech" id="tech">
+      <div class="section-inner">
+        <h2 data-i18n="tech_h2">Как устроены искусственные плантации</h2>
+        <p class="lead" data-i18n="tech_lead">
+          Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса.
+          Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.
+        </p>
+        <div class="cards">
+          <article class="card">
+            <h3 data-i18n="card1_h">Точная вегетация</h3>
+            <p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p>
+          </article>
+          <article class="card">
+            <h3 data-i18n="card2_h">Круговорот воды</h3>
+            <p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p>
+          </article>
+          <article class="card">
+            <h3 data-i18n="card3_h">Без вырубки</h3>
+            <p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p>
+          </article>
+        </div>
+      </div>
+    </section>
 
+    <!-- Sustain -->
+    <section class="section sustain" id="sustain">
+      <div class="section-inner">
+        <h2 data-i18n="sustain_h2">Устойчивость и влияние</h2>
+        <p class="lead" data-i18n="sustain_lead">Счётчики в реальном времени (сохранённые гектары, СО₂, вода) появятся в следующей итерации.</p>
+      </div>
+    </section>
+
+    <!-- Products -->
+    <section class="section products" id="products">
+      <div class="section-inner">
+        <h2 data-i18n="products_h2">Продукты</h2>
+        <p class="lead" data-i18n="products_lead">Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.</p>
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4 data-i18n="prodA_h">Прототип РОСТ A</h4>
+            <p data-i18n="prodA_p">Карамель, цитрус, какао. 250 г</p>
+            <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
+          </div>
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4 data-i18n="prodB_h">Прототип РОСТ B</h4>
+            <p data-i18n="prodB_p">Красные ягоды, цветы, шёлковистое тело. 250 г</p>
+            <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
+          </div>
+          <div class="product-card">
+            <div class="thumb"></div>
+            <h4 data-i18n="prodC_h">Зелёный кофе (B2B)</h4>
+            <p data-i18n="prodC_p">Ровные лоты для кофеен и обжарщиков.</p>
+            <button class="btn small" disabled data-i18n="prod_inquiry">Запрос</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
     <section class="section contact" id="contact">
       <div class="section-inner">
         <h2 data-i18n="contact_h2">Контакты</h2>
@@ -81,38 +149,31 @@
     <span>© <span id="year"></span> Arterra</span>
   </footer>
 
-  <!-- 0) Бутстрап-прогресс: крутит проценты до запуска app.js -->
-  <script>
-    (function(){
-      var el = document.getElementById('progressText'); if(!el) return;
-      var p = 0;
-      window.__arterraPreloaderBoot = setInterval(function(){
+  <!-- Three + GLTFLoader как ES-модули, затем приложение -->
+  <script type="module">
+    // живой прогресс, пока модули грузятся
+    (function boot(){
+      const el = document.getElementById('progressText'); if(!el) return;
+      let p = 0; window.__arterraPreloaderBoot = setInterval(()=>{
         p = Math.min(99, p + 1 + Math.random()*2);
-        // RU по умолчанию
         el.textContent = 'Загрузка ' + Math.floor(p) + '%';
       }, 120);
     })();
-  </script>
 
-  <!-- 1) Three + GLTFLoader как ES-модули с защитой -->
-  <script type="module">
-    try{
+    try {
       const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
       const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
-      // прокидываем в глобал
+      // пробрасываем в глобал, чтобы app.js работал как раньше
       window.THREE = THREE;
       THREE.GLTFLoader = GLTFLoader;
-      // 2) Подключаем приложение
       await import('./app.js');
-    }catch(err){
-      console.error('[Arterra] Module load error:', err);
-      // В крайнем случае — аккуратно скрываем прелоадер
+    } catch (e) {
+      console.error('[Arterra] Module load error:', e);
       const p = document.getElementById('preloader');
       if (p){ p.classList.add('fade-out'); setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); }, 900); }
     }
   </script>
 
-  <!-- 3) Носкрипт-подсказка -->
-  <noscript>Для просмотра сайта включите JavaScript.</noscript>
+  <noscript>Для корректной работы включите JavaScript.</noscript>
 </body>
 </html>
