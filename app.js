@@ -1,5 +1,5 @@
 /* ======================================================
-   ARTERRA — полный app.js
+   ARTERRA — app.js (fixed centering & visibility for GLB)
    - RU/EN, overlay-меню, прелоадер с «пылью»
    - THREE + GLTFLoader + DRACOLoader (Sketchfab-friendly)
    - Центрированное 3D-зерно (fixed), фоллбек-процедурная модель
@@ -101,9 +101,12 @@ const beanCanvas = qs('#bean');
 const BEAN_REL_PATH = 'assets/coffee_bean.glb';
 const BEAN_GLTF_URL = new URL(BEAN_REL_PATH, document.baseURI).href;
 
-/* Немного «вкуса» материалу */
+/* Материал — делаем его явно видимым */
 function enhance(m){
   if(!m || !m.isMeshStandardMaterial) return;
+  m.transparent = false;         // критично для Sketchfab-материалов
+  m.opacity = 1.0;
+  m.side = THREE.DoubleSide;     // на всякий случай (некоторые меши односторонние)
   m.roughness = 0.42;
   m.metalness = 0.08;
   m.clearcoat = 0.55;
@@ -111,6 +114,24 @@ function enhance(m){
   m.sheen = 0.6;
   m.sheenColor = new THREE.Color(0x5e3f2b);
   m.sheenRoughness = 0.5;
+}
+
+/* Центрирование и нормализация размера модели */
+function centerAndNormalize(root, targetSize=2.1){
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+
+  // переносим так, чтобы центр оказался в (0,0,0)
+  root.position.sub(center);
+
+  // иногда в GLB вложенность мешей такова, что pivot внутри; «обнулим» мировую матрицу
+  root.updateMatrixWorld(true);
+
+  // масштаб под единый размер
+  const maxDim = Math.max(size.x, size.y, size.z) || 1.0;
+  const scale = targetSize / maxDim;
+  root.scale.setScalar(scale);
 }
 
 /* Фоллбек — процедурное зерно */
@@ -144,12 +165,15 @@ function initThree(){
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer.setClearColor(0x000000,0);
   renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.physicallyCorrectLights = true;
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(35,1,0.1,100);
   camera.position.set(0,0.65,3.0);
+  camera.lookAt(0,0,0);
 
-  keyLight = new THREE.DirectionalLight(0xffffff,0.95);
+  keyLight = new THREE.DirectionalLight(0xffffff,1.0);
   keyLight.position.set(2,3,2); keyLight.castShadow=true; keyLight.shadow.mapSize.set(1024,1024); scene.add(keyLight);
   scene.add(new THREE.DirectionalLight(0xffffff,0.35)).position.set(-2,1,-2);
   scene.add(new THREE.PointLight(0xffe2c4,0.35,10,2)).position.set(-1.6,1.2,1.8);
@@ -164,11 +188,10 @@ function initThree(){
   if (!THREE.GLTFLoader){ hud('Нет GLTFLoader'); makeFallback(); hidePreloader(); animate(); return; }
 
   const gltfLoader = new THREE.GLTFLoader();
-
   if (THREE.DRACOLoader){
     const draco = new THREE.DRACOLoader();
     draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/libs/draco/');
-    draco.setDecoderConfig({ type: 'js' }); // можно сменить на WASM: {type:'wasm'}
+    draco.setDecoderConfig({ type: 'js' });
     gltfLoader.setDRACOLoader(draco);
   } else {
     hud('DRACO не подключен — пробую без него');
@@ -178,17 +201,22 @@ function initThree(){
   const safety = setTimeout(()=>{ if(!loaded){ hud('GLB timeout → fallback'); makeFallback(); hidePreloader(); } }, 5500);
 
   gltfLoader.load(
-    BEAN_GLTF_URL,
+    new URL(BEAN_REL_PATH, document.baseURI).href,
     (gltf)=>{
       loaded = true; clearTimeout(safety); hud('model ✔︎');
-      const model = gltf.scene;
-      model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=false; enhance(o.material); } });
-
-      // нормализация размера
-      const box = new THREE.Box3().setFromObject(model);
-      const size = box.getSize(new THREE.Vector3());
-      const s = 2.1/Math.max(size.x,size.y,size.z);
-      model.scale.setScalar(s);
+      const model = gltf.scene || gltf.scenes?.[0];
+      // приводим все материалы к видимому виду
+      model.traverse(o=>{
+        if(o.isMesh){
+          o.castShadow = true; o.receiveShadow = false;
+          if (o.material){
+            if (Array.isArray(o.material)) o.material.forEach(enhance);
+            else enhance(o.material);
+          }
+        }
+      });
+      // центр и нормализация размера
+      centerAndNormalize(model, 2.1);
 
       bean = model; scene.add(bean);
       hidePreloader();
@@ -230,6 +258,5 @@ initMenu();
 try{ initThree(); initScroll(); }
 catch(e){ console.error(e); hud('init error'); }
 finally{
-  // страховка от «вечного» прелоадера
   setTimeout(()=>{ const p=qs('#preloader'); if(p && !document.body.classList.contains('loaded')) hidePreloader(); }, 7000);
 }
