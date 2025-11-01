@@ -1,8 +1,8 @@
 /* -------------------------------------------------------
    ARTERRA — RU default + EN toggle + overlay menu
    + Smooth loader transition
-   + PBR coffee bean (procedural realism) with GLB hook
-   + Auto-rotation that slows down on scroll
+   + PBR coffee bean (стабильно, без кастомных шейдеров)
+   + Auto-rotation, замедление при скролле
 ------------------------------------------------------- */
 
 const qs = (s, el=document) => el.querySelector(s);
@@ -105,6 +105,7 @@ const translations = {
   }
 };
 
+// ===== Language
 function setLang(lang){
   const dict = translations[lang] || translations.ru;
   qsa('[data-i18n]').forEach(el => {
@@ -115,7 +116,6 @@ function setLang(lang){
   if (toggle) toggle.textContent = lang.toUpperCase();
   localStorage.setItem('lang', lang);
 }
-
 function initLang(){
   const saved = localStorage.getItem('lang');
   const start = saved || 'ru';
@@ -140,9 +140,7 @@ function initMenu(){
   };
   openBtn.addEventListener('click', () => toggle(true));
   closeBtn.addEventListener('click', () => toggle(false));
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) toggle(false);
-  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) toggle(false); });
 }
 
 // ===== Preloader dust + progress
@@ -180,7 +178,8 @@ function initMenu(){
   let p = 0; const iv = setInterval(()=>{
     p += Math.random()*12;
     if (p>=100){ p=100; clearInterval(iv); }
-    if (progressEl) progressEl.textContent = (localStorage.getItem('lang')==='en'?'Loading ':'Загрузка ') + Math.floor(p) + '%';
+    const lang = localStorage.getItem('lang') || 'ru';
+    if (progressEl) progressEl.textContent = (lang==='en'?'Loading ':'Загрузка ') + Math.floor(p) + '%';
   },120);
 })();
 
@@ -192,15 +191,18 @@ function hidePreloader(){
   setTimeout(()=>{ p.remove(); document.body.classList.add('loaded'); }, 1100);
 }
 
-// ===== 3D: PBR bean (procedural) with GLB hook
+// ===== 3D: стабильное PBR-зерно без кастомных шейдеров
 let renderer, scene, camera, bean, ground, lightKey, lightFill;
 const beanCanvas = qs('#bean');
 
-// put your GLB url here later:
-const BEAN_GLTF_URL = ""; // e.g. "https://cdn.yoursite.com/coffee_bean.glb"
+// Вставишь URL модели позже — подхватим реальную GLB
+const BEAN_GLTF_URL = ""; // например: "https://cdn.yoursite.com/coffee_bean.glb"
 
 function initThree(){
+  if (!beanCanvas) throw new Error('Bean canvas not found');
+
   renderer = new THREE.WebGLRenderer({canvas: beanCanvas, antialias:true, alpha:true});
+  renderer.setClearColor(0x000000, 0); // прозрачный фон
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   fitRenderer();
   renderer.shadowMap.enabled = true;
@@ -234,7 +236,6 @@ function initThree(){
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // Try GLB first, then fallback to procedural
   if (BEAN_GLTF_URL){
     const loader = new THREE.GLTFLoader();
     loader.load(BEAN_GLTF_URL, (gltf)=>{
@@ -262,15 +263,13 @@ function initThree(){
 }
 
 function makeProceduralBean(){
-  // Base geometry
-  const g = new THREE.SphereGeometry(1, 144, 144);
+  // Геометрия «миндаль + центральная борозда»
+  const g = new THREE.SphereGeometry(1, 128, 128);
   const pos = g.attributes.position;
   const v = new THREE.Vector3();
   for (let i=0;i<pos.count;i++){
     v.fromBufferAttribute(pos, i);
-    // almond shaping
     v.y *= 0.78; v.x *= 0.94; v.z *= 1.10;
-    // central groove along Z=0
     const groove = Math.exp(-Math.pow(v.z*1.9,2)) * 0.26;
     const side = Math.sign(v.x) || 1;
     v.x -= side * groove;
@@ -278,70 +277,17 @@ function makeProceduralBean(){
   }
   g.computeVertexNormals();
 
-  // MeshPhysicalMaterial to get real-world sheen & clearcoat
+  // Материал без кастомных шейдеров — устойчивый
   const mat = new THREE.MeshPhysicalMaterial({
-    color: 0x6f4e37,            // coffee brown
-    roughness: 0.42,
+    color: 0x6f4e37,          // кофейный
+    roughness: 0.44,
     metalness: 0.08,
-    clearcoat: 0.55,
+    clearcoat: 0.5,
     clearcoatRoughness: 0.35,
-    sheen: 1.0,
+    sheen: 0.6,
     sheenColor: new THREE.Color(0x5e3f2b),
-    sheenRoughness: 0.35
+    sheenRoughness: 0.5
   });
-
-  // Add subtle normal perturbation via onBeforeCompile (noise)
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uTime = { value: 0 };
-    shader.uniforms.uNoiseAmp = { value: 0.08 };   // micro-relief strength
-    shader.uniforms.uNoiseScale = { value: 3.0 };  // frequency
-
-    shader.vertexShader = `
-      varying vec3 vPos;
-      ${shader.vertexShader}
-    `.replace(
-      `#include <beginnormal_vertex>`,
-      `
-      #include <beginnormal_vertex>
-      vPos = position;
-      `
-    );
-
-    shader.fragmentShader = `
-      varying vec3 vPos;
-      uniform float uTime;
-      uniform float uNoiseAmp;
-      uniform float uNoiseScale;
-
-      // Simple 3D noise (value noise approximation)
-      float hash(vec3 p){ return fract(sin(dot(p, vec3(127.1,311.7,74.7)))*43758.5453123); }
-      float noise(vec3 p){
-        vec3 i = floor(p);
-        vec3 f = fract(p);
-        float n = mix(mix(mix( hash(i+vec3(0,0,0)), hash(i+vec3(1,0,0)), f.x),
-                          mix( hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x), f.y),
-                      mix(mix( hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
-                          mix( hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x), f.y), f.z);
-        return n;
-      }
-      ${shader.fragmentShader}
-    `.replace(
-      `#include <normal_fragment_maps>`,
-      `
-      #include <normal_fragment_maps>
-      // Fake normal detail by tweaking roughness & sheen with noise bands (roast stains)
-      float n = noise(vPos * uNoiseScale);
-      float band = smoothstep(0.35, 0.65, n);
-      float micro = (n - 0.5) * 2.0;
-
-      roughness = clamp(roughness + (0.15*band) - 0.05*micro, 0.06, 1.0);
-      sheenRoughness = clamp(sheenRoughness + 0.15*(1.0-band), 0.05, 1.0);
-      clearcoatRoughness = clamp(clearcoatRoughness + 0.1*(band-0.5), 0.02, 1.0);
-      `
-    );
-
-    mat.userData.shader = shader;
-  };
 
   bean = new THREE.Mesh(g, mat);
   bean.castShadow = true;
@@ -350,17 +296,13 @@ function makeProceduralBean(){
 
 function animate(){
   requestAnimationFrame(animate);
-  // rotation damped by scroll progress
-  const slow = scrollProgress; // 0..1
-  const spin = 0.005 * (1.0 - slow*0.95); // slows almost to stop
+  const slow = scrollProgress;               // 0..1
+  const spin = 0.005 * (1.0 - slow*0.95);   // почти до остановки
   if (bean){
     bean.rotation.y += spin;
     bean.rotation.x = Math.sin(performance.now()*0.0012) * 0.05 * (1.0 - slow*0.9);
-    // gently move light key to keep highlights alive
+    // лёгкое движение ключевого света, пока вверху
     lightKey.position.x = 2.0 + Math.sin(performance.now()*0.0008)*0.6*(1.0 - slow);
-    if (bean.material && bean.material.userData && bean.material.userData.shader){
-      bean.material.userData.shader.uniforms.uTime.value = performance.now()*0.001;
-    }
   }
   renderer.render(scene, camera);
 }
@@ -375,7 +317,7 @@ function fitRenderer(){
   }
 }
 
-// ===== Scroll: compute progress (0 top .. 1 after hero)
+// ===== Scroll: прогресс (0 top .. 1 после hero)
 let scrollProgress = 0;
 function initScrollDamping(){
   const hero = qs('#hero');
@@ -384,10 +326,8 @@ function initScrollDamping(){
     const viewport = innerHeight;
     const passed = Math.min( Math.max((viewport - rect.bottom) / viewport, 0), 1);
     scrollProgress = passed; // 0..1
-    // scale bean a bit on visibility
     const vis = Math.max(0, Math.min(1, rect.bottom/viewport));
     if (bean) bean.scale.setScalar(0.92 + vis*0.12);
-    // dim shadow as we scroll
     if (ground && ground.material && ground.material.opacity !== undefined){
       ground.material.opacity = 0.18 * (1.0 - scrollProgress*0.9);
     }
@@ -400,10 +340,7 @@ function initScrollDamping(){
 window.addEventListener('load', () => {
   initLang();
   initMenu();
-
-  // Three
   try{
-    if (!beanCanvas) throw new Error('Bean canvas not found');
     initThree();
     initScrollDamping();
   }catch(e){
@@ -415,7 +352,7 @@ window.addEventListener('load', () => {
 
 addEventListener('resize', () => { if (renderer) fitRenderer(); });
 
-// Extra safety: hide loader after 4s no matter what
+// Safety: на всякий случай спрятать прелоад через 4с
 setTimeout(() => {
   const p = qs('#preloader');
   if (p && !document.body.classList.contains('loaded')) hidePreloader();
