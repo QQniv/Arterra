@@ -117,11 +117,17 @@
     })();
   </script>
 
-  <!-- Надёжное (не-ESM) подключение Three и GLTFLoader -->
+  <!-- Three.js core (NON-module) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
 
-  <!-- Приложение -->
+  <!-- Loaders (NON-module so they attach to window.THREE) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/DRACOLoader.js"></script>
+
+  <!-- Optional: cache -->
+  <script>THREE.Cache.enabled = true;</script>
+
+  <!-- App (must be after loaders) -->
   <script src="app.js"></script>
 
   <noscript>Для корректной работы включите JavaScript.</noscript>
