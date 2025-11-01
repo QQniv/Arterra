@@ -49,10 +49,8 @@ body{
 }
 .loader-caption .progress{font-size:12px; color:#7a7e8a}
 
-/* ===== Preloader exit animation ===== */
-#preloader.fade-out{
-  animation:preloaderExit 1.2s ease forwards;
-}
+/* ===== Preloader exit ===== */
+#preloader.fade-out{ animation:preloaderExit 1.2s ease forwards; }
 @keyframes preloaderExit{
   0%{opacity:1; transform:scale(1)}
   40%{transform:scale(1.04)}
@@ -60,9 +58,7 @@ body{
 }
 
 /* ===== Page reveal ===== */
-main, header, footer{
-  opacity:0; transform:translateY(20px); filter:blur(4px);
-}
+main, header, footer{ opacity:0; transform:translateY(20px); filter:blur(4px); }
 body.loaded main, body.loaded header, body.loaded footer{
   opacity:1; transform:none; filter:none;
   transition:opacity 1.2s ease, transform 1.2s ease, filter 1.2s ease;
@@ -91,9 +87,7 @@ body.loaded main, body.loaded header, body.loaded footer{
   display:flex; align-items:center; gap:8px; cursor:pointer;
   border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px;
 }
-.menu-toggle .burger{
-  width:16px; height:12px; position:relative; display:inline-block;
-}
+.menu-toggle .burger{ width:16px; height:12px; position:relative; display:inline-block; }
 .menu-toggle .burger::before,
 .menu-toggle .burger::after{
   content:""; position:absolute; left:0; right:0; height:2px; background:#2b2f39; border-radius:2px;
@@ -110,9 +104,7 @@ body.loaded main, body.loaded header, body.loaded footer{
 }
 .menu-overlay.open{opacity:1; visibility:visible}
 .menu-inner{max-width:1200px; margin:0 auto; padding:24px; position:relative}
-.menu-grid{
-  display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:40px;
-}
+.menu-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:40px; }
 .menu-grid a{
   display:block; text-decoration:none; color:#101113;
   border:1px solid var(--line); padding:16px; border-radius:16px;
@@ -181,10 +173,7 @@ body.loaded main, body.loaded header, body.loaded footer{
 .product-card p{color:#606876; margin-bottom:10px}
 
 /* ===================== FOOTER ===================== */
-.site-footer{
-  border-top:1px solid var(--line);
-  padding:18px 20px; color:#687080; text-align:center;
-}
+.site-footer{ border-top:1px solid var(--line); padding:18px 20px; color:#687080; text-align:center }
 
 /* ===================== RESPONSIVE ===================== */
 @media (max-width:980px){
@@ -196,9 +185,4 @@ body.loaded main, body.loaded header, body.loaded footer{
 @media (max-width:560px){
   .menu-grid{grid-template-columns:1fr}
   .menu-toggle .menu-label{display:none}
-}
-/* Sketchfab fallback iframe */
-.sketchfab-embed {
-  position:absolute; inset:0; width:100%; height:100%;
-  border:0; display:none; /* по умолчанию скрыт, включим из JS */
 }
