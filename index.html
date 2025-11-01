@@ -28,9 +28,7 @@
 
   <!-- Header -->
   <header class="site-header">
-    <div class="brand">
-      <span class="logo">ARTERRA</span>
-    </div>
+    <div class="brand"><span class="logo">ARTERRA</span></div>
     <div class="header-actions">
       <button id="langToggle" class="lang-toggle" aria-label="Switch language">RU</button>
       <button id="menuToggle" class="menu-toggle" aria-label="Open menu">
@@ -58,10 +56,7 @@
     <section class="hero" id="hero">
       <div class="hero-copy">
         <h1><span data-i18n="h1_line1">Искусственная природа.</span><br/><span data-i18n="h1_line2">Настоящий кофе.</span></h1>
-        <p data-i18n="hero_p">
-          Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество
-          и открыть новое поколение устойчивого вкуса.
-        </p>
+        <p data-i18n="hero_p">Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов, стабилизировать качество и открыть новое поколение устойчивого вкуса.</p>
         <div class="cta-row">
           <a href="#tech" class="btn" data-i18n="cta_method">Посмотреть метод</a>
           <a href="#products" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
@@ -71,31 +66,17 @@
       <!-- 3D Bean -->
       <div class="bean-stage">
         <canvas id="bean"></canvas>
-        <!-- (если что-то пойдёт не так, сюда можно будет показать Sketchfab-iframe) -->
       </div>
     </section>
 
     <section class="section tech" id="tech">
       <div class="section-inner">
         <h2 data-i18n="tech_h2">Как устроены искусственные плантации</h2>
-        <p class="lead" data-i18n="tech_lead">
-          Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса.
-          Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.
-        </p>
-
+        <p class="lead" data-i18n="tech_lead">Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса. Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.</p>
         <div class="cards">
-          <article class="card">
-            <h3 data-i18n="card1_h">Точная вегетация</h3>
-            <p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p>
-          </article>
-          <article class="card">
-            <h3 data-i18n="card2_h">Круговорот воды</h3>
-            <p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p>
-          </article>
-          <article class="card">
-            <h3 data-i18n="card3_h">Без вырубки</h3>
-            <p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p>
-          </article>
+          <article class="card"><h3 data-i18n="card1_h">Точная вегетация</h3><p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p></article>
+          <article class="card"><h3 data-i18n="card2_h">Круговорот воды</h3><p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p></article>
+          <article class="card"><h3 data-i18n="card3_h">Без вырубки</h3><p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p></article>
         </div>
       </div>
     </section>
@@ -146,11 +127,15 @@
     <span>© <span id="year"></span> Arterra</span>
   </footer>
 
-  <!-- Three.js Core + Loaders -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-
-  <!-- App -->
-  <script src="app.js"></script>
+  <!-- Three + GLTFLoader как ES-модули, затем твой app.js -->
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+    // прокидываем в window, чтобы старый app.js мог использовать глобальный THREE и THREE.GLTFLoader
+    window.THREE = THREE;
+    THREE.GLTFLoader = GLTFLoader;
+    // после инициализации модулей подключаем твоё приложение
+    import './app.js';
+  </script>
 </body>
 </html>
