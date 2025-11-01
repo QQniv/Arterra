@@ -43,21 +43,20 @@
       <nav class="menu-grid">
         <a href="#block-1" data-i18n="nav_tech">Технология</a>
         <a href="#block-3" data-i18n="nav_sustain">Устойчивость</a>
-        <a href="#block-4" data-i18n="nav_products">Продукты</a>
+        <a href="#block-5" data-i18n="nav_products">Продукты</a>
         <a href="#block-6" data-i18n="nav_contact">Контакты</a>
       </nav>
       <button id="menuClose" class="menu-close" aria-label="Close menu">×</button>
     </div>
   </div>
 
-  <!-- Fixed 3D bean layer (always centered) -->
+  <!-- Fixed 3D bean -->
   <div class="bean-fixed" aria-hidden="true">
     <canvas id="bean"></canvas>
   </div>
 
-  <!-- Side rails layout -->
+  <!-- Side-rails content -->
   <main class="rails">
-    <!-- left / center-gap / right -->
     <section class="rail rail-left" id="block-1">
       <h1 class="big">
         <span data-i18n="h1_line1">Искусственная природа.</span><br/>
@@ -68,8 +67,8 @@
         стабилизировать качество и открыть новое поколение устойчивого вкуса.
       </p>
       <div class="cta-row">
-        <a href="#block-2" class="btn" data-i18n="cta_method">Посмотреть метод</a>
-        <a href="#block-4" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
+        <a href="#block-3" class="btn" data-i18n="cta_method">Посмотреть метод</a>
+        <a href="#block-5" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
       </div>
     </section>
 
@@ -82,45 +81,21 @@
         Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.
       </p>
       <div class="bullets">
-        <div class="b">
-          <h3 data-i18n="card1_h">Точная вегетация</h3>
-          <p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p>
-        </div>
-        <div class="b">
-          <h3 data-i18n="card2_h">Круговорот воды</h3>
-          <p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p>
-        </div>
-        <div class="b">
-          <h3 data-i18n="card3_h">Без вырубки</h3>
-          <p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p>
-        </div>
+        <div class="b"><h3 data-i18n="card1_h">Точная вегетация</h3><p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p></div>
+        <div class="b"><h3 data-i18n="card2_h">Круговорот воды</h3><p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p></div>
+        <div class="b"><h3 data-i18n="card3_h">Без вырубки</h3><p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p></div>
       </div>
     </section>
 
-    <section class="spacer" id="block-4"></section>
+    <section class="spacer"></section>
 
     <section class="rail rail-left" id="block-5">
       <h2 data-i18n="products_h2">Продукты</h2>
       <p class="muted" data-i18n="products_lead">Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.</p>
       <div class="products">
-        <div class="pc">
-          <div class="thumb"></div>
-          <h4 data-i18n="prodA_h">Прототип РОСТ A</h4>
-          <p data-i18n="prodA_p">Карамель, цитрус, какао. 250 г</p>
-          <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
-        </div>
-        <div class="pc">
-          <div class="thumb"></div>
-          <h4 data-i18n="prodB_h">Прототип РОСТ B</h4>
-          <p data-i18n="prodB_p">Красные ягоды, цветы, шёлковистое тело. 250 г</p>
-          <button class="btn small" disabled data-i18n="prod_soon">Скоро</button>
-        </div>
-        <div class="pc">
-          <div class="thumb"></div>
-          <h4 data-i18n="prodC_h">Зелёный кофе (B2B)</h4>
-          <p data-i18n="prodC_p">Ровные лоты для кофеен и обжарщиков.</p>
-          <button class="btn small" disabled data-i18n="prod_inquiry">Запрос</button>
-        </div>
+        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodA_h">Прототип РОСТ A</h4><p data-i18n="prodA_p">Карамель, цитрус, какао. 250 г</p><button class="btn small" disabled data-i18n="prod_soon">Скоро</button></div>
+        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodB_h">Прототип РОСТ B</h4><p data-i18n="prodB_p">Красные ягоды, цветы, шёлковистое тело. 250 г</p><button class="btn small" disabled data-i18n="prod_soon">Скоро</button></div>
+        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodC_h">Зелёный кофе (B2B)</h4><p data-i18n="prodC_p">Ровные лоты для кофеен и обжарщиков.</p><button class="btn small" disabled data-i18n="prod_inquiry">Запрос</button></div>
       </div>
     </section>
 
@@ -131,12 +106,10 @@
       <p class="muted" data-i18n="contact_lead">Опт и пресса: hello@arterra.coffee (временный адрес)</p>
     </section>
 
-    <footer class="site-footer">
-      © <span id="year"></span> Arterra
-    </footer>
+    <footer class="site-footer">© <span id="year"></span> Arterra</footer>
   </main>
 
-  <!-- Boot progress while modules load -->
+  <!-- Bootstrap progress (крутит % до старта app.js) -->
   <script>
     (function(){
       const el = document.getElementById('progressText'); if(!el) return;
@@ -144,18 +117,13 @@
     })();
   </script>
 
-  <!-- Three as module + GLTFLoader, then app.js -->
-  <script type="module">
-    try{
-      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
-      const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
-      window.THREE = THREE;               // expose
-      THREE.GLTFLoader = GLTFLoader;      // attach loader class
-      await import('./app.js');           // run app
-    }catch(e){
-      console.error('[Arterra] Module load error:', e);
-      const p=document.getElementById('preloader'); if(p){p.classList.add('fade-out'); setTimeout(()=>{p.remove(); document.body.classList.add('loaded');},900);}
-    }
-  </script>
+  <!-- Надёжное (не-ESM) подключение Three и GLTFLoader -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- Приложение -->
+  <script src="app.js"></script>
+
+  <noscript>Для корректной работы включите JavaScript.</noscript>
 </body>
 </html>
