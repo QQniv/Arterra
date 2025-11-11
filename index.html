@@ -1,131 +1,273 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>ARTERRA • Искусственная природа. Настоящий кофе.</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Arterra — Next-gen Coffee</title>
+  <meta name="description" content="Arterra — интеллектуальные кофейные плантации и производство. Вкус будущего, стабильность профиля и контроль на клеточном уровне." />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0a0b12" />
 
-  <link rel="stylesheet" href="styles.css"/>
+  <!-- Favicons (заглушки, поменяем позже) -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+
+  <!-- Шрифты -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap&subset=cyrillic" rel="stylesheet" />
+
+  <!-- Preload критичных ассетов -->
+  <link rel="preload" as="image" href="assets/hero/hero-frame.jpg" />
+  <link rel="preload" as="video" href="assets/hero/hero-loop.mp4" type="video/mp4" />
+  <link rel="preload" as="image" href="assets/textures/noise.png" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <!-- Preloader -->
-  <div id="preloader" aria-hidden="true">
-    <canvas id="dust"></canvas>
-    <div class="loader-center">
-      <div class="seed-to-bean" aria-hidden="true"></div>
-      <div class="loader-caption">
-        <span class="brand">ARTERRA</span>
-        <span class="progress" id="progressText">Загрузка 0%</span>
-      </div>
-    </div>
+<body class="theme-dark">
+
+  <!-- ============================ -->
+  <!--   Фоновое видео + маска     -->
+  <!-- ============================ -->
+  <div class="bg">
+    <video class="bg__video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="assets/hero/hero-frame.jpg">
+      <source src="assets/hero/hero-loop.mp4" type="video/mp4" />
+    </video>
+
+    <!-- SVG noise-displacement (жидкая маска) -->
+    <svg class="bg__fx" aria-hidden="true" width="0" height="0">
+      <filter id="noise-displace" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="2" stitchTiles="stitch">
+          <animate attributeName="baseFrequency" dur="6s" values="0.012; 0.02; 0.012" repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" scale="16" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+
+    <div class="bg__overlay"></div>
   </div>
 
-  <!-- Header -->
-  <header class="site-header">
-    <div class="brand"><span class="logo">ARTERRA</span></div>
-    <div class="header-actions">
-      <button id="langToggle" class="lang-toggle" aria-label="Switch language">RU</button>
-      <button id="menuToggle" class="menu-toggle" aria-label="Open menu">
-        <span class="burger" aria-hidden="true"></span>
-        <span class="menu-label" data-i18n="menu">Меню</span>
+  <!-- ============================ -->
+  <!--           Шапка              -->
+  <!-- ============================ -->
+  <header class="site-header" data-sticky>
+    <div class="container header__inner">
+      <a class="brand" href="#top" aria-label="Arterra — на главную">
+        <span class="brand__logo">Arterra</span>
+      </a>
+
+      <nav class="top-nav" aria-label="Основное меню">
+        <a href="#tech" class="top-nav__link">Технология</a>
+        <a href="#lab" class="top-nav__link">Производство</a>
+        <a href="#metrics" class="top-nav__link">Цифры</a>
+        <a href="#partners" class="top-nav__link">Партнёры</a>
+        <a href="#contact" class="top-nav__link">Контакты</a>
+      </nav>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Меню" aria-expanded="false" data-magnetic>
+        <span></span>
       </button>
     </div>
+
+    <!-- Мобильное меню -->
+    <nav class="mobile-drawer" id="mobileDrawer" hidden>
+      <a href="#tech">Технология</a>
+      <a href="#lab">Производство</a>
+      <a href="#metrics">Цифры</a>
+      <a href="#partners">Партнёры</a>
+      <a href="#contact">Контакты</a>
+    </nav>
   </header>
 
-  <!-- Overlay Menu -->
-  <div id="menuOverlay" class="menu-overlay" aria-hidden="true">
-    <div class="menu-inner">
-      <nav class="menu-grid">
-        <a href="#block-1" data-i18n="nav_tech">Технология</a>
-        <a href="#block-3" data-i18n="nav_sustain">Устойчивость</a>
-        <a href="#block-5" data-i18n="nav_products">Продукты</a>
-        <a href="#block-6" data-i18n="nav_contact">Контакты</a>
-      </nav>
-      <button id="menuClose" class="menu-close" aria-label="Close menu">×</button>
-    </div>
-  </div>
+  <main id="top">
 
-  <!-- Fixed 3D bean -->
-  <div class="bean-fixed" aria-hidden="true">
-    <canvas id="bean"></canvas>
-  </div>
+    <!-- ============================ -->
+    <!--            HERO              -->
+    <!-- ============================ -->
+    <section class="section hero">
+      <div class="container">
+        <div class="hero__content" data-parallax data-speed="0.22">
+          <p class="kicker" data-reveal>Arterra</p>
+          <h1 class="hero__title" data-reveal data-delay="0.05">
+            Next-gen Coffee <span class="title-accent">биотехнологии</span>
+          </h1>
+          <p class="hero__sub" data-reveal data-delay="0.12">
+            Интеллектуальные плантации, контроль профиля и&nbsp;стабильность вкуса. Производим кофе будущего — сегодня.
+          </p>
+          <div class="hero__actions" data-stagger data-delay="0.18">
+            <a href="#tech" class="btn btn--primary" data-magnetic>Как это работает</a>
+            <a href="#contact" class="btn btn--ghost" data-magnetic>Связаться</a>
+          </div>
+        </div>
 
-  <!-- Side-rails content -->
-  <main class="rails">
-    <section class="rail rail-left" id="block-1">
-      <h1 class="big">
-        <span data-i18n="h1_line1">Искусственная природа.</span><br/>
-        <span data-i18n="h1_line2">Настоящий кофе.</span>
-      </h1>
-      <p class="lead" data-i18n="hero_p">
-        Мы выращиваем кофе в искусственных плантациях, чтобы прекратить вырубку лесов,
-        стабилизировать качество и открыть новое поколение устойчивого вкуса.
-      </p>
-      <div class="cta-row">
-        <a href="#block-3" class="btn" data-i18n="cta_method">Посмотреть метод</a>
-        <a href="#block-5" class="link" data-i18n="cta_shop">Магазин (Москва)</a>
+        <!-- Декор: контейнер под 3D-боб / канвас (подключим позже в app.js) -->
+        <div class="hero__visual" aria-hidden="true">
+          <canvas id="beanCanvas" class="bean-canvas"></canvas>
+        </div>
       </div>
     </section>
 
-    <section class="spacer" id="block-2"></section>
+    <!-- ============================ -->
+    <!--        ТЕХНОЛОГИЯ            -->
+    <!-- ============================ -->
+    <section class="section section--alt" id="tech">
+      <div class="container">
+        <div class="hgroup" data-reveal>
+          <p class="kicker">ТЕХНОЛОГИЯ</p>
+          <h2 class="h2">Контроль вкуса <span class="title-accent">на клеточном уровне</span></h2>
+          <p class="sub">Собственная платформа управления культивацией, аналитика процесса экстракции и стабилизация вкусового профиля.</p>
+        </div>
 
-    <section class="rail rail-right" id="block-3">
-      <h2 data-i18n="tech_h2">Как устроены искусственные плантации</h2>
-      <p class="muted" data-i18n="tech_lead">
-        Контролируемый свет. Точные питательные элементы. Рециркуляция воды. Нулевая потеря леса.
-        Наши биотех-теплицы создают стабильный микроклимат и повторяемый профиль вкуса.
-      </p>
-      <div class="bullets">
-        <div class="b"><h3 data-i18n="card1_h">Точная вегетация</h3><p data-i18n="card1_p">Сетки датчиков отслеживают влажность, pH, EC и транспирацию кроны. ИИ держит микроклимат в ±0,2°C.</p></div>
-        <div class="b"><h3 data-i18n="card2_h">Круговорот воды</h3><p data-i18n="card2_p">Замкнутое орошение возвращает &gt;90% конденсата. Меньше воды — чище выражение терруара.</p></div>
-        <div class="b"><h3 data-i18n="card3_h">Без вырубки</h3><p data-i18n="card3_p">Выход с м² превосходит традиционные плантации — кофе больше не зависит от лесных площадей.</p></div>
+        <div class="grid grid--3" data-stagger>
+          <article class="card" data-reveal>
+            <h3 class="card__title">Интеллектуальные плантации</h3>
+            <p class="card__text">Сенсоры и модели прогнозируют поведение урожая и корректируют режимы выращивания.</p>
+          </article>
+          <article class="card" data-reveal data-delay="0.06">
+            <h3 class="card__title">Профиль вкуса</h3>
+            <p class="card__text">Алгоритмы удерживают параметры под заданный референс, исключая «лотерейность» партий.</p>
+          </article>
+          <article class="card" data-reveal data-delay="0.12">
+            <h3 class="card__title">Трассируемость</h3>
+            <p class="card__text">Каждая партия имеет паспорт происхождения и параметры обработки на всех этапах.</p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="spacer"></section>
+    <!-- ============================ -->
+    <!--        ПРОИЗВОДСТВО          -->
+    <!-- ============================ -->
+    <section class="section" id="lab">
+      <div class="container">
+        <div class="hgroup" data-reveal>
+          <p class="kicker">ПРОИЗВОДСТВО</p>
+          <h2 class="h2">Лаб-процессы и промышленная дисциплина</h2>
+          <p class="sub">От микробиологии до обжарки — один связный пайплайн с контрольными точками качества.</p>
+        </div>
 
-    <section class="rail rail-left" id="block-5">
-      <h2 data-i18n="products_h2">Продукты</h2>
-      <p class="muted" data-i18n="products_lead">Чистая сетка для запуска в Москве. Оплата/интеграции подключим позже.</p>
-      <div class="products">
-        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodA_h">Прототип РОСТ A</h4><p data-i18n="prodA_p">Карамель, цитрус, какао. 250 г</p><button class="btn small" disabled data-i18n="prod_soon">Скоро</button></div>
-        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodB_h">Прототип РОСТ B</h4><p data-i18n="prodB_p">Красные ягоды, цветы, шёлковистое тело. 250 г</p><button class="btn small" disabled data-i18n="prod_soon">Скоро</button></div>
-        <div class="pc"><div class="thumb"></div><h4 data-i18n="prodC_h">Зелёный кофе (B2B)</h4><p data-i18n="prodC_p">Ровные лоты для кофеен и обжарщиков.</p><button class="btn small" disabled data-i18n="prod_inquiry">Запрос</button></div>
+        <!-- Ступенчатая лента этапов -->
+        <ol class="steps" data-stagger>
+          <li class="step" data-reveal>
+            <span class="step__num">01</span>
+            <h3 class="step__title">Культивация</h3>
+            <p class="step__text">Управление средой и питанием, сбор первичных метрик.</p>
+          </li>
+          <li class="step" data-reveal data-delay="0.08">
+            <span class="step__num">02</span>
+            <h3 class="step__title">Обработка</h3>
+            <p class="step__text">Стабилизация влажности и подготовка к обжарке.</p>
+          </li>
+          <li class="step" data-reveal data-delay="0.16">
+            <span class="step__num">03</span>
+            <h3 class="step__title">Обжарка</h3>
+            <p class="step__text">Профиль в режиме реального времени, телеметрия и логирование.</p>
+          </li>
+          <li class="step" data-reveal data-delay="0.24">
+            <span class="step__num">04</span>
+            <h3 class="step__title">Каппинг</h3>
+            <p class="step__text">Слепая дегустация, датасеты сенсорных оценок и коррекция.</p>
+          </li>
+        </ol>
       </div>
     </section>
 
-    <section class="spacer" id="block-6"></section>
+    <!-- ============================ -->
+    <!--           ЦИФРЫ              -->
+    <!-- ============================ -->
+    <section class="section section--alt" id="metrics">
+      <div class="container">
+        <div class="hgroup" data-reveal>
+          <p class="kicker">ЦИФРЫ</p>
+          <h2 class="h2">Проверяемый результат</h2>
+          <p class="sub">Показываем контрольные метрики открыто: стабильность вкуса и объём суточного выпуска.</p>
+        </div>
 
-    <section class="rail rail-right">
-      <h2 data-i18n="contact_h2">Контакты</h2>
-      <p class="muted" data-i18n="contact_lead">Опт и пресса: hello@arterra.coffee (временный адрес)</p>
+        <div class="kpis">
+          <div class="kpi" data-reveal>
+            <div class="kpi__num" data-countup data-to="98" data-suffix="%">0%</div>
+            <div class="kpi__label">Стабильность профиля</div>
+          </div>
+          <div class="kpi" data-reveal data-delay="0.06">
+            <div class="kpi__num" data-countup data-to="120" data-suffix=" кг/сут">0</div>
+            <div class="kpi__label">Производительность</div>
+          </div>
+          <div class="kpi" data-reveal data-delay="0.12">
+            <div class="kpi__num" data-countup data-to="24" data-suffix="/7">0</div>
+            <div class="kpi__label">Мониторинг</div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <footer class="site-footer">© <span id="year"></span> Arterra</footer>
+    <!-- ============================ -->
+    <!--         ПАРТНЁРЫ             -->
+    <!-- ============================ -->
+    <section class="section" id="partners">
+      <div class="container">
+        <div class="hgroup" data-reveal>
+          <p class="kicker">ПАРТНЁРЫ</p>
+          <h2 class="h2">Доверяют технологиям Arterra</h2>
+        </div>
+
+        <div class="marquee" data-marquee data-speed="80">
+          <div class="marquee__track">
+            <img src="assets/partners/p1.svg" alt="Партнёр 1" />
+            <img src="assets/partners/p2.svg" alt="Партнёр 2" />
+            <img src="assets/partners/p3.svg" alt="Партнёр 3" />
+            <img src="assets/partners/p4.svg" alt="Партнёр 4" />
+            <img src="assets/partners/p5.svg" alt="Партнёр 5" />
+          </div>
+          <div class="marquee__track" aria-hidden="true">
+            <img src="assets/partners/p1.svg" alt="" />
+            <img src="assets/partners/p2.svg" alt="" />
+            <img src="assets/partners/p3.svg" alt="" />
+            <img src="assets/partners/p4.svg" alt="" />
+            <img src="assets/partners/p5.svg" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ -->
+    <!--            CTA               -->
+    <!-- ============================ -->
+    <section class="section section--cta" id="contact">
+      <div class="container cta" data-reveal>
+        <h2 class="h2 cta__title">Хотите стабильный вкус? Начнём пилот.</h2>
+        <p class="sub cta__sub">Подготовим тестовую партию под ваш референс и настроим профиль.</p>
+        <div class="cta__actions">
+          <a href="mailto:hello@arterra.coffee" class="btn btn--primary" data-magnetic>hello@arterra.coffee</a>
+          <a href="#top" class="btn btn--ghost" data-magnetic>Наверх</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Bootstrap progress while the module loads -->
-  <script>
-    (function(){
-      const el = document.getElementById('progressText'); if(!el) return;
-      let p = 0; window.__arterraPreloaderBoot = setInterval(()=>{ p=Math.min(99,p+1+Math.random()*2); el.textContent='Загрузка '+Math.floor(p)+'%'; },120);
-    })();
-  </script>
+  <!-- ============================ -->
+  <!--            Футер             -->
+  <!-- ============================ -->
+  <footer class="site-footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">© <span id="year"></span> Arterra</div>
+      <nav class="footer__nav">
+        <a href="#tech">Технология</a>
+        <a href="#lab">Производство</a>
+        <a href="#metrics">Цифры</a>
+        <a href="#partners">Партнёры</a>
+      </nav>
+    </div>
+  </footer>
 
-  <!-- ES Modules: Three + Loaders + App -->
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
-    import { DRACOLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/DRACOLoader.js';
-    import initApp from './app.module.js';
-    initApp({ THREE, GLTFLoader, DRACOLoader });
-  </script>
+  <!-- Небольшой noscript -->
+  <noscript>
+    <style>
+      [data-reveal],[data-stagger] { opacity: 1 !important; transform: none !important; }
+      .marquee__track { animation: none !important; }
+    </style>
+  </noscript>
 
-  <noscript>Для корректной работы включите JavaScript.</noscript>
+  <!-- Скрипт -->
+  <script src="app.js" defer></script>
 </body>
 </html>
