@@ -5,71 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>Arterra — Next-gen Coffee</title>
-  <meta name="description" content="Arterra — интеллектуальные кофейные плантации и производство. Вкус будущего, стабильность профиля и контроль на клеточном уровне." />
+  <meta name="description" content="Arterra — интеллектуальные кофейные плантации. Вкус будущего, стабильность профиля, контроль на клеточном уровне." />
   <meta name="color-scheme" content="dark light" />
   <meta name="theme-color" content="#0a0b12" />
 
-  <!-- Favicons (заглушки, поменяем позже) -->
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <!-- Base path для GitHub Pages -->
+  <base href="./" />
 
-  <!-- Шрифты -->
+  <!-- Шрифт -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap&subset=cyrillic" rel="stylesheet" />
 
-  <!-- Preload критичных ассетов -->
-  <link rel="preload" as="image" href="assets/hero/hero-frame.jpg" />
-  <link rel="preload" as="video" href="assets/hero/hero-loop.mp4" type="video/mp4" />
-  <link rel="preload" as="image" href="assets/textures/noise.png" />
+  <!-- Подключение стилей с кэш-бастингом -->
+  <link rel="stylesheet" href="./styles.css?v=2025-11-11" />
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <!-- Фавикон -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 </head>
+
 <body class="theme-dark">
-
   <!-- ============================ -->
-  <!--   Фоновое видео + маска     -->
+  <!--           HEADER             -->
   <!-- ============================ -->
-  <div class="bg">
-    <video class="bg__video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="assets/hero/hero-frame.jpg">
-      <source src="assets/hero/hero-loop.mp4" type="video/mp4" />
-    </video>
-
-    <!-- SVG noise-displacement (жидкая маска) -->
-    <svg class="bg__fx" aria-hidden="true" width="0" height="0">
-      <filter id="noise-displace" x="0" y="0" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="2" stitchTiles="stitch">
-          <animate attributeName="baseFrequency" dur="6s" values="0.012; 0.02; 0.012" repeatCount="indefinite" />
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" scale="16" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
-
-    <div class="bg__overlay"></div>
-  </div>
-
-  <!-- ============================ -->
-  <!--           Шапка              -->
-  <!-- ============================ -->
-  <header class="site-header" data-sticky>
+  <header class="site-header">
     <div class="container header__inner">
-      <a class="brand" href="#top" aria-label="Arterra — на главную">
-        <span class="brand__logo">Arterra</span>
-      </a>
-
-      <nav class="top-nav" aria-label="Основное меню">
-        <a href="#tech" class="top-nav__link">Технология</a>
-        <a href="#lab" class="top-nav__link">Производство</a>
-        <a href="#metrics" class="top-nav__link">Цифры</a>
-        <a href="#partners" class="top-nav__link">Партнёры</a>
-        <a href="#contact" class="top-nav__link">Контакты</a>
+      <a href="#top" class="brand"><span class="brand__logo">Arterra</span></a>
+      <nav class="top-nav">
+        <a href="#tech">Технология</a>
+        <a href="#lab">Производство</a>
+        <a href="#metrics">Цифры</a>
+        <a href="#partners">Партнёры</a>
+        <a href="#contact">Контакты</a>
       </nav>
-
-      <button class="menu-toggle" id="menuToggle" aria-label="Меню" aria-expanded="false" data-magnetic>
-        <span></span>
-      </button>
+      <button class="menu-toggle" id="menuToggle" aria-label="Меню" aria-expanded="false"><span></span></button>
     </div>
 
-    <!-- Мобильное меню -->
     <nav class="mobile-drawer" id="mobileDrawer" hidden>
       <a href="#tech">Технология</a>
       <a href="#lab">Производство</a>
@@ -79,11 +48,10 @@
     </nav>
   </header>
 
+  <!-- ============================ -->
+  <!--           HERO               -->
+  <!-- ============================ -->
   <main id="top">
-
-    <!-- ============================ -->
-    <!--            HERO              -->
-    <!-- ============================ -->
     <section class="section hero">
       <div class="container">
         <div class="hero__content" data-parallax data-speed="0.22">
@@ -99,143 +67,85 @@
             <a href="#contact" class="btn btn--ghost" data-magnetic>Связаться</a>
           </div>
         </div>
-
-        <!-- Декор: контейнер под 3D-боб / канвас (подключим позже в app.js) -->
-        <div class="hero__visual" aria-hidden="true">
-          <canvas id="beanCanvas" class="bean-canvas"></canvas>
-        </div>
+        <div class="hero__visual"><canvas id="beanCanvas" class="bean-canvas"></canvas></div>
       </div>
     </section>
 
-    <!-- ============================ -->
-    <!--        ТЕХНОЛОГИЯ            -->
-    <!-- ============================ -->
     <section class="section section--alt" id="tech">
       <div class="container">
         <div class="hgroup" data-reveal>
           <p class="kicker">ТЕХНОЛОГИЯ</p>
           <h2 class="h2">Контроль вкуса <span class="title-accent">на клеточном уровне</span></h2>
-          <p class="sub">Собственная платформа управления культивацией, аналитика процесса экстракции и стабилизация вкусового профиля.</p>
+          <p class="sub">Платформа управления культивацией и стабилизации вкусового профиля.</p>
         </div>
 
         <div class="grid grid--3" data-stagger>
           <article class="card" data-reveal>
             <h3 class="card__title">Интеллектуальные плантации</h3>
-            <p class="card__text">Сенсоры и модели прогнозируют поведение урожая и корректируют режимы выращивания.</p>
+            <p class="card__text">Сенсоры прогнозируют урожай и корректируют режимы выращивания.</p>
           </article>
           <article class="card" data-reveal data-delay="0.06">
             <h3 class="card__title">Профиль вкуса</h3>
-            <p class="card__text">Алгоритмы удерживают параметры под заданный референс, исключая «лотерейность» партий.</p>
+            <p class="card__text">Алгоритмы удерживают параметры под заданный референс.</p>
           </article>
           <article class="card" data-reveal data-delay="0.12">
             <h3 class="card__title">Трассируемость</h3>
-            <p class="card__text">Каждая партия имеет паспорт происхождения и параметры обработки на всех этапах.</p>
+            <p class="card__text">Каждая партия имеет паспорт и параметры обработки.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- ============================ -->
-    <!--        ПРОИЗВОДСТВО          -->
-    <!-- ============================ -->
     <section class="section" id="lab">
       <div class="container">
         <div class="hgroup" data-reveal>
           <p class="kicker">ПРОИЗВОДСТВО</p>
-          <h2 class="h2">Лаб-процессы и промышленная дисциплина</h2>
-          <p class="sub">От микробиологии до обжарки — один связный пайплайн с контрольными точками качества.</p>
+          <h2 class="h2">Лаб-процессы и дисциплина</h2>
+          <p class="sub">От микробиологии до обжарки — один пайплайн контроля качества.</p>
         </div>
 
-        <!-- Ступенчатая лента этапов -->
         <ol class="steps" data-stagger>
-          <li class="step" data-reveal>
-            <span class="step__num">01</span>
-            <h3 class="step__title">Культивация</h3>
-            <p class="step__text">Управление средой и питанием, сбор первичных метрик.</p>
-          </li>
-          <li class="step" data-reveal data-delay="0.08">
-            <span class="step__num">02</span>
-            <h3 class="step__title">Обработка</h3>
-            <p class="step__text">Стабилизация влажности и подготовка к обжарке.</p>
-          </li>
-          <li class="step" data-reveal data-delay="0.16">
-            <span class="step__num">03</span>
-            <h3 class="step__title">Обжарка</h3>
-            <p class="step__text">Профиль в режиме реального времени, телеметрия и логирование.</p>
-          </li>
-          <li class="step" data-reveal data-delay="0.24">
-            <span class="step__num">04</span>
-            <h3 class="step__title">Каппинг</h3>
-            <p class="step__text">Слепая дегустация, датасеты сенсорных оценок и коррекция.</p>
-          </li>
+          <li class="step" data-reveal><span class="step__num">01</span><h3 class="step__title">Культивация</h3></li>
+          <li class="step" data-reveal data-delay="0.08"><span class="step__num">02</span><h3 class="step__title">Обработка</h3></li>
+          <li class="step" data-reveal data-delay="0.16"><span class="step__num">03</span><h3 class="step__title">Обжарка</h3></li>
+          <li class="step" data-reveal data-delay="0.24"><span class="step__num">04</span><h3 class="step__title">Каппинг</h3></li>
         </ol>
       </div>
     </section>
 
-    <!-- ============================ -->
-    <!--           ЦИФРЫ              -->
-    <!-- ============================ -->
     <section class="section section--alt" id="metrics">
       <div class="container">
         <div class="hgroup" data-reveal>
           <p class="kicker">ЦИФРЫ</p>
           <h2 class="h2">Проверяемый результат</h2>
-          <p class="sub">Показываем контрольные метрики открыто: стабильность вкуса и объём суточного выпуска.</p>
         </div>
 
         <div class="kpis">
-          <div class="kpi" data-reveal>
-            <div class="kpi__num" data-countup data-to="98" data-suffix="%">0%</div>
-            <div class="kpi__label">Стабильность профиля</div>
-          </div>
-          <div class="kpi" data-reveal data-delay="0.06">
-            <div class="kpi__num" data-countup data-to="120" data-suffix=" кг/сут">0</div>
-            <div class="kpi__label">Производительность</div>
-          </div>
-          <div class="kpi" data-reveal data-delay="0.12">
-            <div class="kpi__num" data-countup data-to="24" data-suffix="/7">0</div>
-            <div class="kpi__label">Мониторинг</div>
-          </div>
+          <div class="kpi" data-reveal><div class="kpi__num" data-countup data-to="98" data-suffix="%">0%</div><div class="kpi__label">Стабильность</div></div>
+          <div class="kpi" data-reveal data-delay="0.06"><div class="kpi__num" data-countup data-to="120" data-suffix=" кг/сут">0</div><div class="kpi__label">Производительность</div></div>
+          <div class="kpi" data-reveal data-delay="0.12"><div class="kpi__num" data-countup data-to="24" data-suffix="/7">0</div><div class="kpi__label">Мониторинг</div></div>
         </div>
       </div>
     </section>
 
-    <!-- ============================ -->
-    <!--         ПАРТНЁРЫ             -->
-    <!-- ============================ -->
     <section class="section" id="partners">
       <div class="container">
-        <div class="hgroup" data-reveal>
-          <p class="kicker">ПАРТНЁРЫ</p>
-          <h2 class="h2">Доверяют технологиям Arterra</h2>
-        </div>
-
+        <div class="hgroup" data-reveal><p class="kicker">ПАРТНЁРЫ</p><h2 class="h2">Доверяют технологиям Arterra</h2></div>
         <div class="marquee" data-marquee data-speed="80">
           <div class="marquee__track">
-            <img src="assets/partners/p1.svg" alt="Партнёр 1" />
-            <img src="assets/partners/p2.svg" alt="Партнёр 2" />
-            <img src="assets/partners/p3.svg" alt="Партнёр 3" />
-            <img src="assets/partners/p4.svg" alt="Партнёр 4" />
-            <img src="assets/partners/p5.svg" alt="Партнёр 5" />
+            <img src="assets/partners/p1.svg" alt="" /><img src="assets/partners/p2.svg" alt="" /><img src="assets/partners/p3.svg" alt="" />
           </div>
           <div class="marquee__track" aria-hidden="true">
-            <img src="assets/partners/p1.svg" alt="" />
-            <img src="assets/partners/p2.svg" alt="" />
-            <img src="assets/partners/p3.svg" alt="" />
-            <img src="assets/partners/p4.svg" alt="" />
-            <img src="assets/partners/p5.svg" alt="" />
+            <img src="assets/partners/p1.svg" alt="" /><img src="assets/partners/p2.svg" alt="" /><img src="assets/partners/p3.svg" alt="" />
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============================ -->
-    <!--            CTA               -->
-    <!-- ============================ -->
     <section class="section section--cta" id="contact">
       <div class="container cta" data-reveal>
         <h2 class="h2 cta__title">Хотите стабильный вкус? Начнём пилот.</h2>
-        <p class="sub cta__sub">Подготовим тестовую партию под ваш референс и настроим профиль.</p>
+        <p class="sub cta__sub">Тестовая партия под ваш референс.</p>
         <div class="cta__actions">
           <a href="mailto:hello@arterra.coffee" class="btn btn--primary" data-magnetic>hello@arterra.coffee</a>
           <a href="#top" class="btn btn--ghost" data-magnetic>Наверх</a>
@@ -244,30 +154,14 @@
     </section>
   </main>
 
-  <!-- ============================ -->
-  <!--            Футер             -->
-  <!-- ============================ -->
   <footer class="site-footer">
     <div class="container footer__inner">
       <div class="footer__brand">© <span id="year"></span> Arterra</div>
-      <nav class="footer__nav">
-        <a href="#tech">Технология</a>
-        <a href="#lab">Производство</a>
-        <a href="#metrics">Цифры</a>
-        <a href="#partners">Партнёры</a>
-      </nav>
+      <nav class="footer__nav"><a href="#tech">Технология</a><a href="#lab">Производство</a><a href="#metrics">Цифры</a><a href="#partners">Партнёры</a></nav>
     </div>
   </footer>
 
-  <!-- Небольшой noscript -->
-  <noscript>
-    <style>
-      [data-reveal],[data-stagger] { opacity: 1 !important; transform: none !important; }
-      .marquee__track { animation: none !important; }
-    </style>
-  </noscript>
-
-  <!-- Скрипт -->
-  <script src="app.js" defer></script>
+  <!-- JS -->
+  <script src="./app.js?v=2025-11-11" defer></script>
 </body>
 </html>
